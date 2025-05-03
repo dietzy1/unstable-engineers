@@ -72,7 +72,12 @@ const PLAYERS = [
   { id: 'player2', name: 'Player 2', lifeTotal: 20 },
 ];
 
-export const GameScreen = () => {
+interface GameScreenProps {
+  gameId: string;
+  onLeaveGame: () => void;
+}
+
+export const GameScreen = ({ gameId, onLeaveGame }: GameScreenProps) => {
   // Game state
   const [manaCards, setManaCards] = useState<CardProps[]>(SAMPLE_MANA_CARDS);
   const [actionCards, setActionCards] = useState<CardProps[]>(SAMPLE_ACTION_CARDS);
@@ -242,7 +247,12 @@ export const GameScreen = () => {
           <View className="flex-1 p-2">
             {/* Game Header */}
             <View className="mb-2 flex-row items-center justify-between rounded-lg bg-indigo-900 p-2">
-              <Text className="text-center text-xl font-bold text-white">Unstable Engineers</Text>
+              <View className="flex-row items-center">
+                <Text className="text-xl font-bold text-white">Unstable Engineers</Text>
+                <View className="ml-2 rounded bg-blue-600 px-2 py-0.5">
+                  <Text className="text-xs text-white">Game #{gameId.slice(-4)}</Text>
+                </View>
+              </View>
 
               <View className="flex-row">
                 <TouchableOpacity
@@ -262,11 +272,21 @@ export const GameScreen = () => {
             {/* Game Status Bar with End Turn Button */}
             <View className="mb-2 flex-row items-center justify-between rounded-lg bg-gray-700 p-2">
               <Text className="text-white">Life: {lifeTotals.player1}</Text>
-              <TouchableOpacity
-                className="rounded-lg bg-indigo-600 px-3 py-1"
-                onPress={handleEndTurn}>
-                <Text className="font-bold text-white">End Turn</Text>
-              </TouchableOpacity>
+
+              <View className="flex-row">
+                <TouchableOpacity
+                  className="mr-2 rounded-lg bg-red-600 px-3 py-1"
+                  onPress={onLeaveGame}>
+                  <Text className="font-bold text-white">Leave Game</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="rounded-lg bg-indigo-600 px-3 py-1"
+                  onPress={handleEndTurn}>
+                  <Text className="font-bold text-white">End Turn</Text>
+                </TouchableOpacity>
+              </View>
+
               <Text className="text-white">Cards: {manaCards.length + actionCards.length}</Text>
             </View>
 

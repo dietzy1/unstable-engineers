@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "my-expo-app",
-    "slug": "my-expo-app",
+    "name": "Unstable Engineer",
+    "slug": "Unstable-Engineer",
     "version": "1.0.0",
 
     "web": {
@@ -14,15 +14,15 @@
 
     "plugins": [],
 
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "orientation": "default",
+    "icon": "./assets/image.png",
 
     "userInterfaceStyle": "light",
 
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
