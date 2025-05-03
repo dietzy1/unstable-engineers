@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { Card, CardProps } from './Card';
 import { CardDeck } from './CardDeck';
+import { EffectProps } from './BuffDebuff';
+import { EffectsManager } from './EffectsManager';
 
 // Sample data for available cards to draw
 const AVAILABLE_DRAW_CARDS: CardProps[] = [
@@ -46,15 +48,22 @@ interface GameOverviewScreenProps {
   onNavigateToHand: () => void;
   onDrawManaCard?: (card: CardProps) => void;
   onDrawActionCard?: (card: CardProps) => void;
+  onApplyEffect?: (effect: EffectProps, playerId: string) => void;
+  playerIds: string[];
+  playerNames: string[];
 }
 
 export const GameOverviewScreen = ({
   onNavigateToHand,
   onDrawManaCard,
   onDrawActionCard,
+  onApplyEffect,
+  playerIds = [],
+  playerNames = [],
 }: GameOverviewScreenProps) => {
   const [selectedCard, setSelectedCard] = useState<CardProps | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showEffectsManager, setShowEffectsManager] = useState(false);
 
   const handleCardPress = (card: CardProps) => {
     setSelectedCard(card);
@@ -102,6 +111,16 @@ export const GameOverviewScreen = ({
     }
   };
 
+  const handleApplyEffect = (effect: EffectProps, playerId: string) => {
+    if (onApplyEffect) {
+      onApplyEffect(effect, playerId);
+    }
+  };
+
+  const toggleEffectsManager = () => {
+    setShowEffectsManager(!showEffectsManager);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-gray-800">
       <View className="flex-1 p-2">
@@ -117,16 +136,34 @@ export const GameOverviewScreen = ({
           </TouchableOpacity>
         </View>
 
-        {/* Game Status Bar */}
-        <View className="mb-2 flex-row justify-between rounded-lg bg-gray-700 p-2">
+        {/* Game Status Bar with Effects Button */}
+        <View className="mb-2 flex-row items-center justify-between rounded-lg bg-gray-700 p-2">
           <Text className="text-white">Turn: 1</Text>
-          <Text className="text-white">Players: 2</Text>
+          <TouchableOpacity
+            className="rounded-lg bg-purple-700 px-3 py-1"
+            onPress={toggleEffectsManager}>
+            <Text className="font-bold text-white">
+              {showEffectsManager ? 'Hide Effects' : 'Show Effects'}
+            </Text>
+          </TouchableOpacity>
+          <Text className="text-white">Players: {playerNames.length}</Text>
         </View>
 
         {/* Swipe Hint */}
         <View className="mb-2 items-center">
           <Text className="text-xs text-gray-400">Swipe down to view your hand</Text>
         </View>
+
+        {/* Effects Manager (conditional) */}
+        {showEffectsManager && (
+          <View className="mb-2">
+            <EffectsManager
+              onApplyEffect={handleApplyEffect}
+              playerIds={playerIds}
+              playerNames={playerNames}
+            />
+          </View>
+        )}
 
         {/* Card Draw Area */}
         <View className="flex-1 flex-row items-center justify-between">

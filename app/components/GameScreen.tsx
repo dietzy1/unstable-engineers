@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
 import { PlayerHand } from './PlayerHand';
 import { CardProps } from './Card';
 import { GameOverviewScreen } from './GameOverviewScreen';
 import { SwipeNavigation } from './SwipeNavigation';
 import { CardAddedNotification } from './CardAddedNotification';
+import { EffectProps } from './BuffDebuff';
 
 // Sample data for demonstration
 const SAMPLE_MANA_CARDS: CardProps[] = [
@@ -56,11 +57,23 @@ const SAMPLE_ACTION_CARDS: CardProps[] = [
   },
 ];
 
+// Sample players
+const PLAYERS = [
+  { id: 'player1', name: 'Player 1' },
+  { id: 'player2', name: 'Player 2' },
+];
+
 export const GameScreen = () => {
   // Game state
   const [manaCards, setManaCards] = useState<CardProps[]>(SAMPLE_MANA_CARDS);
   const [actionCards, setActionCards] = useState<CardProps[]>(SAMPLE_ACTION_CARDS);
   const [currentView, setCurrentView] = useState<'hand' | 'overview'>('hand');
+
+  // Effects state
+  const [playerEffects, setPlayerEffects] = useState<{ [playerId: string]: EffectProps[] }>({
+    player1: [], // Current player
+    player2: [], // Other player
+  });
 
   // Notification state
   const [notification, setNotification] = useState({
@@ -69,13 +82,24 @@ export const GameScreen = () => {
     type: 'action' as 'mana' | 'action',
   });
 
+  // Effect notification
+  const [effectNotification, setEffectNotification] = useState({
+    visible: false,
+    effectName: '',
+    effectType: 'buff' as 'buff' | 'debuff',
+  });
+
   // Handler for navigation between views
   const navigateToHand = () => setCurrentView('hand');
   const navigateToOverview = () => setCurrentView('overview');
 
-  // Handler to hide notification
+  // Handlers to hide notifications
   const hideNotification = () => {
     setNotification((prev) => ({ ...prev, visible: false }));
+  };
+
+  const hideEffectNotification = () => {
+    setEffectNotification((prev) => ({ ...prev, visible: false }));
   };
 
   // Handlers for drawing cards
@@ -103,6 +127,57 @@ export const GameScreen = () => {
     navigateToHand();
   };
 
+  // Handler for applying effects
+  const handleApplyEffect = (effect: EffectProps, playerId: string) => {
+    setPlayerEffects((prev) => ({
+      ...prev,
+      [playerId]: [...(prev[playerId] || []), effect],
+    }));
+
+    // Show effect notification
+    setEffectNotification({
+      visible: true,
+      effectName: effect.name,
+      effectType: effect.type,
+    });
+  };
+
+  // Handler for removing an effect
+  const handleRemoveEffect = (effectId: string, playerId: string) => {
+    setPlayerEffects((prev) => ({
+      ...prev,
+      [playerId]: prev[playerId].filter((effect) => effect.id !== effectId),
+    }));
+  };
+
+  // Simulate turn progression to update effect durations
+  const handleEndTurn = () => {
+    // Update all effects that have turns remaining
+    setPlayerEffects((prev) => {
+      const newEffects = { ...prev };
+
+      Object.keys(newEffects).forEach((playerId) => {
+        newEffects[playerId] = newEffects[playerId]
+          .map((effect) => {
+            if (effect.duration !== 'permanent' && effect.turnsRemaining) {
+              const newTurnsRemaining = effect.turnsRemaining - 1;
+
+              // If effect has expired, remove it
+              if (newTurnsRemaining <= 0) {
+                return null;
+              }
+
+              return { ...effect, turnsRemaining: newTurnsRemaining };
+            }
+            return effect;
+          })
+          .filter(Boolean) as EffectProps[];
+      });
+
+      return newEffects;
+    });
+  };
+
   // Handle swipe gestures
   const handleSwipeUp = () => {
     if (currentView === 'hand') {
@@ -115,6 +190,12 @@ export const GameScreen = () => {
       navigateToHand();
     }
   };
+
+  // Separate buffs and debuffs for current player (player1)
+  const currentPlayerBuffs =
+    playerEffects.player1?.filter((effect) => effect.type === 'buff') || [];
+  const currentPlayerDebuffs =
+    playerEffects.player1?.filter((effect) => effect.type === 'debuff') || [];
 
   // Render the PlayerHand or GameOverviewScreen based on current view
   return (
@@ -134,10 +215,14 @@ export const GameScreen = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Game Status Bar */}
-            <View className="mb-2 flex-row justify-between rounded-lg bg-gray-700 p-2">
+            {/* Game Status Bar with End Turn Button */}
+            <View className="mb-2 flex-row items-center justify-between rounded-lg bg-gray-700 p-2">
               <Text className="text-white">Life: 20</Text>
-              <Text className="text-white">Turn: 1</Text>
+              <TouchableOpacity
+                className="rounded-lg bg-indigo-600 px-3 py-1"
+                onPress={handleEndTurn}>
+                <Text className="font-bold text-white">End Turn</Text>
+              </TouchableOpacity>
               <Text className="text-white">Cards: {manaCards.length + actionCards.length}</Text>
             </View>
 
@@ -148,7 +233,19 @@ export const GameScreen = () => {
 
             {/* Player Hand */}
             <View className="flex-1 justify-end">
-              <PlayerHand playerName="Player 1" manaCards={manaCards} actionCards={actionCards} />
+              <PlayerHand
+                playerName="Player 1"
+                manaCards={manaCards}
+                actionCards={actionCards}
+                buffEffects={currentPlayerBuffs}
+                debuffEffects={currentPlayerDebuffs}
+                onEffectPress={(effect) => {
+                  if (effect.type === 'debuff') {
+                    // Allow removal of debuffs (simulating dispel)
+                    handleRemoveEffect(effect.id, 'player1');
+                  }
+                }}
+              />
             </View>
           </View>
         ) : (
@@ -156,6 +253,9 @@ export const GameScreen = () => {
             onNavigateToHand={navigateToHand}
             onDrawManaCard={handleDrawManaCard}
             onDrawActionCard={handleDrawActionCard}
+            onApplyEffect={handleApplyEffect}
+            playerIds={PLAYERS.map((p) => p.id)}
+            playerNames={PLAYERS.map((p) => p.name)}
           />
         )}
       </SwipeNavigation>
@@ -167,6 +267,19 @@ export const GameScreen = () => {
         type={notification.type}
         onHide={hideNotification}
       />
+
+      {/* Effect Notification */}
+      {effectNotification.visible && (
+        <View
+          className={`absolute bottom-24 self-center rounded-lg p-2 ${
+            effectNotification.effectType === 'buff' ? 'bg-emerald-600' : 'bg-rose-600'
+          }`}>
+          <Text className="font-bold text-white">
+            {effectNotification.effectType === 'buff' ? 'Buff' : 'Debuff'} Applied
+          </Text>
+          <Text className="text-sm text-white">{effectNotification.effectName}</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
