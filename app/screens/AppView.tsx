@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { GameScreen } from './GameScreen';
-import { GameSelectionScreen } from './GameSelectionScreen';
+
 import { LoadingScreen } from './LoadingScreen';
+import { GameScreen } from './game/GameScreen';
+import { GameSelectionScreen } from './lobby/GameSelectionScreen';
 
 export const AppView = () => {
   // Track connection state and active game

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Modal } from 'react-native';
-import { CardProps } from './Card';
-import { EffectProps } from './BuffDebuff';
-import { PlayerDetailView } from './PlayerDetailView';
+
+import { EffectProps } from '../../components/BuffDebuff';
+import { CardProps } from '../../components/Card';
+import { PlayerDetailScreen } from './PlayerDetailScreen';
 
 interface PlayerData {
   id: string;
@@ -105,7 +106,7 @@ export const PlayersOverviewScreen = ({
         animationType="slide"
         onRequestClose={closePlayerDetail}>
         {selectedPlayer && (
-          <PlayerDetailView
+          <PlayerDetailScreen
             playerName={selectedPlayer.name}
             manaCards={selectedPlayer.manaCards}
             buffEffects={selectedPlayer.effects.filter((e) => e.type === 'buff')}

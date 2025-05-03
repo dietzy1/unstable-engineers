@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
+
 import { CardInteractions } from './CardInteractions';
 
 export type CardType = 'mana' | 'action';

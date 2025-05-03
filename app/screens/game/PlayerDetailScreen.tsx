@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Card, CardProps } from './Card';
-import { BuffDebuff, EffectProps } from './BuffDebuff';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 
-interface PlayerDetailViewProps {
+import { BuffDebuff, EffectProps } from '../../components/BuffDebuff';
+import { Card, CardProps } from '../../components/Card';
+
+interface PlayerDetailScreenProps {
   playerName: string;
   manaCards: CardProps[];
   buffEffects: EffectProps[];
@@ -12,14 +13,14 @@ interface PlayerDetailViewProps {
   onEffectPress?: (effect: EffectProps) => void;
 }
 
-export const PlayerDetailView = ({
+export const PlayerDetailScreen = ({
   playerName,
   manaCards,
   buffEffects,
   debuffEffects,
   onClose,
   onEffectPress,
-}: PlayerDetailViewProps) => {
+}: PlayerDetailScreenProps) => {
   const handleEffectPress = (effect: EffectProps) => {
     if (onEffectPress) {
       onEffectPress(effect);
@@ -27,7 +28,7 @@ export const PlayerDetailView = ({
   };
 
   return (
-    <View className="flex-1 bg-gray-800 p-3">
+    <SafeAreaView className="flex-1 bg-gray-800">
       {/* Header with player name and close button */}
       <View className="mb-4 flex-row items-center justify-between rounded-lg bg-indigo-900 p-3">
         <Text className="text-xl font-bold text-white">{playerName}</Text>
@@ -80,7 +81,7 @@ export const PlayerDetailView = ({
           Action cards are hidden to preserve game privacy
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

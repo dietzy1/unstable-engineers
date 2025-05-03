@@ -8,10 +8,11 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import { Card, CardProps } from './Card';
-import { CardDeck } from './CardDeck';
-import { EffectProps } from './BuffDebuff';
-import { EffectsManager } from './EffectsManager';
+
+import { EffectProps } from '../../components/BuffDebuff';
+import { Card, CardProps } from '../../components/Card';
+import { CardDeck } from '../../components/CardDeck';
+import { EffectsManager } from '../../components/EffectsManager';
 
 // Sample data for available cards to draw
 const AVAILABLE_DRAW_CARDS: CardProps[] = [
@@ -207,11 +208,7 @@ export const GameOverviewScreen = ({
       </View>
 
       {/* Card Detail Modal */}
-      <Modal
-        visible={showModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={handleCloseModal}>
+      <Modal visible={showModal} transparent animationType="fade" onRequestClose={handleCloseModal}>
         <TouchableOpacity
           className="flex-1 items-center justify-center bg-black/70"
           activeOpacity={1}

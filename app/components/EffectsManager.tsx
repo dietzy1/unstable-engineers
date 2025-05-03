@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+
 import { BuffDebuff, EffectProps } from './BuffDebuff';
 
 // Sample available effects
@@ -120,7 +121,7 @@ export const EffectsManager = ({ onApplyEffect, playerIds, playerNames }: Effect
       {/* Player Selection Modal */}
       <Modal
         visible={showPlayerSelection}
-        transparent={true}
+        transparent
         animationType="fade"
         onRequestClose={handleCloseModal}>
         <TouchableOpacity

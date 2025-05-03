@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
-import { PlayerHand } from './PlayerHand';
-import { CardProps } from './Card';
+
 import { GameOverviewScreen } from './GameOverviewScreen';
-import { SwipeNavigation } from './SwipeNavigation';
-import { CardAddedNotification } from './CardAddedNotification';
-import { EffectProps } from './BuffDebuff';
 import { PlayersOverviewScreen } from './PlayersOverviewScreen';
+import { EffectProps } from '../../components/BuffDebuff';
+import { CardProps } from '../../components/Card';
+import { CardAddedNotification } from '../../components/CardAddedNotification';
+import { PlayerHand } from '../../components/PlayerHand';
+import { SwipeNavigation } from '../../components/SwipeNavigation';
 
 // Sample data for demonstration
 const SAMPLE_MANA_CARDS: CardProps[] = [

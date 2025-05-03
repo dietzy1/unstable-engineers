@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity } from 'react-native';
-import { Card, CardProps } from './Card';
+
 import { BuffDebuff, EffectProps } from './BuffDebuff';
+import { Card, CardProps } from './Card';
 
 interface PlayerHandProps {
   playerName: string;
@@ -106,7 +107,7 @@ export const PlayerHand = ({
       {/* Card Detail Modal */}
       <Modal
         visible={selectedCard !== null}
-        transparent={true}
+        transparent
         animationType="fade"
         onRequestClose={handleCloseModal}>
         <TouchableOpacity
@@ -162,7 +163,7 @@ export const PlayerHand = ({
       {/* Effect Detail Modal */}
       <Modal
         visible={selectedEffect !== null}
-        transparent={true}
+        transparent
         animationType="fade"
         onRequestClose={handleCloseEffectModal}>
         <TouchableOpacity
