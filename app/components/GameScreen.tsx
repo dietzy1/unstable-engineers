@@ -6,6 +6,7 @@ import { GameOverviewScreen } from './GameOverviewScreen';
 import { SwipeNavigation } from './SwipeNavigation';
 import { CardAddedNotification } from './CardAddedNotification';
 import { EffectProps } from './BuffDebuff';
+import { PlayersOverviewScreen } from './PlayersOverviewScreen';
 
 // Sample data for demonstration
 const SAMPLE_MANA_CARDS: CardProps[] = [
@@ -57,22 +58,40 @@ const SAMPLE_ACTION_CARDS: CardProps[] = [
   },
 ];
 
+// Sample mana cards for other players
+const PLAYER2_MANA_CARDS: CardProps[] = [
+  { id: 'p2m1', name: 'Island', type: 'mana', manaColor: 'blue' },
+  { id: 'p2m2', name: 'Island', type: 'mana', manaColor: 'blue' },
+  { id: 'p2m3', name: 'Island', type: 'mana', manaColor: 'blue' },
+  { id: 'p2m4', name: 'Swamp', type: 'mana', manaColor: 'black' },
+];
+
 // Sample players
 const PLAYERS = [
-  { id: 'player1', name: 'Player 1' },
-  { id: 'player2', name: 'Player 2' },
+  { id: 'player1', name: 'Player 1', lifeTotal: 20 },
+  { id: 'player2', name: 'Player 2', lifeTotal: 20 },
 ];
 
 export const GameScreen = () => {
   // Game state
   const [manaCards, setManaCards] = useState<CardProps[]>(SAMPLE_MANA_CARDS);
   const [actionCards, setActionCards] = useState<CardProps[]>(SAMPLE_ACTION_CARDS);
-  const [currentView, setCurrentView] = useState<'hand' | 'overview'>('hand');
+  const [currentView, setCurrentView] = useState<'hand' | 'overview' | 'players'>('hand');
+  const [lifeTotals, setLifeTotals] = useState<{ [playerId: string]: number }>({
+    player1: 20,
+    player2: 20,
+  });
 
   // Effects state
   const [playerEffects, setPlayerEffects] = useState<{ [playerId: string]: EffectProps[] }>({
     player1: [], // Current player
     player2: [], // Other player
+  });
+
+  // Player mana cards state - track mana cards for all players
+  const [playerManaCards, setPlayerManaCards] = useState<{ [playerId: string]: CardProps[] }>({
+    player1: manaCards,
+    player2: PLAYER2_MANA_CARDS,
   });
 
   // Notification state
@@ -89,9 +108,18 @@ export const GameScreen = () => {
     effectType: 'buff' as 'buff' | 'debuff',
   });
 
+  // Keep player1's mana cards in sync with the main state
+  useEffect(() => {
+    setPlayerManaCards((prev) => ({
+      ...prev,
+      player1: manaCards,
+    }));
+  }, [manaCards]);
+
   // Handler for navigation between views
   const navigateToHand = () => setCurrentView('hand');
   const navigateToOverview = () => setCurrentView('overview');
+  const navigateToPlayers = () => setCurrentView('players');
 
   // Handlers to hide notifications
   const hideNotification = () => {
@@ -186,7 +214,7 @@ export const GameScreen = () => {
   };
 
   const handleSwipeDown = () => {
-    if (currentView === 'overview') {
+    if (currentView === 'overview' || currentView === 'players') {
       navigateToHand();
     }
   };
@@ -197,7 +225,16 @@ export const GameScreen = () => {
   const currentPlayerDebuffs =
     playerEffects.player1?.filter((effect) => effect.type === 'debuff') || [];
 
-  // Render the PlayerHand or GameOverviewScreen based on current view
+  // Prepare player data for players overview
+  const playersData = PLAYERS.map((player) => ({
+    id: player.id,
+    name: player.name,
+    manaCards: playerManaCards[player.id] || [],
+    effects: playerEffects[player.id] || [],
+    lifeTotal: lifeTotals[player.id],
+  }));
+
+  // Render the appropriate screen based on current view
   return (
     <SafeAreaView className="flex-1 bg-gray-800">
       <SwipeNavigation onSwipeUp={handleSwipeUp} onSwipeDown={handleSwipeDown}>
@@ -207,17 +244,24 @@ export const GameScreen = () => {
             <View className="mb-2 flex-row items-center justify-between rounded-lg bg-indigo-900 p-2">
               <Text className="text-center text-xl font-bold text-white">Unstable Engineers</Text>
 
-              {/* Navigation button */}
-              <TouchableOpacity
-                className="rounded-lg bg-amber-600 px-4 py-1"
-                onPress={navigateToOverview}>
-                <Text className="font-bold text-white">DRAW CARDS</Text>
-              </TouchableOpacity>
+              <View className="flex-row">
+                <TouchableOpacity
+                  className="mr-2 rounded-lg bg-purple-600 px-4 py-1"
+                  onPress={navigateToPlayers}>
+                  <Text className="font-bold text-white">PLAYERS</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="rounded-lg bg-amber-600 px-4 py-1"
+                  onPress={navigateToOverview}>
+                  <Text className="font-bold text-white">DRAW CARDS</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Game Status Bar with End Turn Button */}
             <View className="mb-2 flex-row items-center justify-between rounded-lg bg-gray-700 p-2">
-              <Text className="text-white">Life: 20</Text>
+              <Text className="text-white">Life: {lifeTotals.player1}</Text>
               <TouchableOpacity
                 className="rounded-lg bg-indigo-600 px-3 py-1"
                 onPress={handleEndTurn}>
@@ -248,7 +292,7 @@ export const GameScreen = () => {
               />
             </View>
           </View>
-        ) : (
+        ) : currentView === 'overview' ? (
           <GameOverviewScreen
             onNavigateToHand={navigateToHand}
             onDrawManaCard={handleDrawManaCard}
@@ -256,6 +300,13 @@ export const GameScreen = () => {
             onApplyEffect={handleApplyEffect}
             playerIds={PLAYERS.map((p) => p.id)}
             playerNames={PLAYERS.map((p) => p.name)}
+          />
+        ) : (
+          <PlayersOverviewScreen
+            players={playersData}
+            onNavigateToHand={navigateToHand}
+            onNavigateToGameOverview={navigateToOverview}
+            onEffectPress={handleApplyEffect}
           />
         )}
       </SwipeNavigation>
