@@ -1,46 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { View, Dimensions, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, useWindowDimensions } from 'react-native';
 
 interface LandscapeContainerProps {
   children: React.ReactNode;
+  forceRotate?: boolean; // Optional prop to force rotation even in landscape
 }
 
-export const LandscapeContainer = ({ children }: LandscapeContainerProps) => {
-  const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+export const LandscapeContainer = ({ children, forceRotate = false }: LandscapeContainerProps) => {
+  // useWindowDimensions automatically updates on dimension changes
+  const { width, height } = useWindowDimensions();
 
-  useEffect(() => {
-    const subscription = Dimensions.addEventListener('change', ({ window }) => {
-      setDimensions(window);
-    });
+  // Check if the device is in landscape mode
+  const isLandscape = width > height;
 
-    return () => subscription.remove();
-  }, []);
-
-  const isLandscape = dimensions.width > dimensions.height;
-
-  if (!isLandscape) {
-    // If not in landscape, apply a transformation to make it look landscape
-    return (
-      <View
-        style={[
-          styles.container,
-          {
-            transform: [{ rotate: '90deg' }],
-            width: dimensions.height,
-            height: dimensions.width,
-          },
-        ]}>
-        {children}
-      </View>
-    );
+  // If already in landscape mode and not forcing rotation, render normally
+  if (isLandscape && !forceRotate) {
+    return <View className="flex-1">{children}</View>;
   }
 
-  // Already in landscape, no transformation needed
-  return <View style={styles.container}>{children}</View>;
+  // If in portrait mode or force rotating, apply rotation transform
+  return (
+    <View
+      className="flex-1"
+      style={{
+        transform: [{ rotate: '90deg' }],
+        width: height,
+        height: width,
+      }}>
+      {children}
+    </View>
+  );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

@@ -56,31 +56,29 @@ const SAMPLE_ACTION_CARDS: CardProps[] = [
 
 export const GameScreen = () => {
   return (
-    <LandscapeContainer>
-      <SafeAreaView className="flex-1 bg-gray-800">
-        <View className="flex-1 p-2">
-          {/* Game Header */}
-          <View className="mb-2 rounded-lg bg-indigo-900 p-2">
-            <Text className="text-center text-xl font-bold text-white">Magic-Inspired Game</Text>
-          </View>
-
-          {/* Game Status Bar */}
-          <View className="mb-2 flex-row justify-between rounded-lg bg-gray-700 p-2">
-            <Text className="text-white">Life: 20</Text>
-            <Text className="text-white">Turn: 1</Text>
-            <Text className="text-white">Cards: 43</Text>
-          </View>
-
-          {/* Player Hand */}
-          <View className="flex-1 justify-end">
-            <PlayerHand
-              playerName="Player 1"
-              manaCards={SAMPLE_MANA_CARDS}
-              actionCards={SAMPLE_ACTION_CARDS}
-            />
-          </View>
+    <SafeAreaView className="flex-1 bg-gray-800">
+      <View className="flex-1 p-2">
+        {/* Game Header */}
+        <View className="mb-2 rounded-lg bg-indigo-900 p-2">
+          <Text className="text-center text-xl font-bold text-white">Unstable Engineers</Text>
         </View>
-      </SafeAreaView>
-    </LandscapeContainer>
+
+        {/* Game Status Bar */}
+        <View className="mb-2 flex-row justify-between rounded-lg bg-gray-700 p-2">
+          <Text className="text-white">Life: 20</Text>
+          <Text className="text-white">Turn: 1</Text>
+          <Text className="text-white">Cards: 43</Text>
+        </View>
+
+        {/* Player Hand */}
+        <View className="flex-1 justify-end">
+          <PlayerHand
+            playerName="Player 1"
+            manaCards={SAMPLE_MANA_CARDS}
+            actionCards={SAMPLE_ACTION_CARDS}
+          />
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
