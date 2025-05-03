@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity, Image } from 'react-native';
 
 import { BuffDebuff, EffectProps } from './BuffDebuff';
 import { Card, CardProps } from './Card';
@@ -45,8 +45,34 @@ export const PlayerHand = ({
 
   return (
     <View className="flex-1">
-      <View className="mb-2 rounded-lg bg-gray-900 p-2">
-        <Text className="text-lg font-bold text-white">{playerName}'s Hand</Text>
+      <View className="mb-3 rounded-xl bg-gray-800 p-3 shadow-md">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <Image
+              source={require('assets/image.png')}
+              className="h-10 w-10 rounded-full border-2 border-amber-500"
+            />
+            <Text className="ml-2 text-lg font-bold text-white">{playerName}'s hand</Text>
+          </View>
+
+          <View className="flex-row space-x-3">
+            {/* Health */}
+            <View className="flex-row items-center">
+              <View className="h-6 w-6 items-center justify-center rounded-full bg-red-600">
+                <Text className="text-xs font-bold text-white">❤️</Text>
+              </View>
+              <Text className="ml-1 font-bold text-red-400">{20}</Text>
+            </View>
+
+            {/* Mana Pool */}
+            <View className="flex-row items-center">
+              <View className="h-6 w-6 items-center justify-center rounded-full bg-blue-600">
+                <Text className="text-xs font-bold text-white">⚡</Text>
+              </View>
+              <Text className="ml-1 font-bold text-blue-400">{20}</Text>
+            </View>
+          </View>
+        </View>
       </View>
 
       {/* Effects Section (if there are any) */}

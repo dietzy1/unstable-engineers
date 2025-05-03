@@ -1,10 +1,11 @@
+import { Header } from 'components/Header';
 import { View, Text, ActivityIndicator, SafeAreaView, Image } from 'react-native';
 
 export const LoadingScreen = () => {
   return (
-    <SafeAreaView className="flex-1 bg-gray-800">
-      <View className="flex-1 items-center justify-center">
-        <Text className="mb-6 text-3xl font-bold text-white">Unstable Engineers</Text>
+    <SafeAreaView className="flex-1 bg-gray-900">
+      <View className="flex-1 items-center justify-center p-4">
+        <Header />
         <Image
           source={require('assets/image.png')}
           className="mb-6 h-32 w-32"

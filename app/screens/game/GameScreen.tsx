@@ -8,6 +8,7 @@ import { CardProps } from '../../components/Card';
 import { CardAddedNotification } from '../../components/CardAddedNotification';
 import { PlayerHand } from '../../components/PlayerHand';
 import { SwipeNavigation } from '../../components/SwipeNavigation';
+import { Header } from 'components/Header';
 
 // Sample data for demonstration
 const SAMPLE_MANA_CARDS: CardProps[] = [
@@ -242,14 +243,14 @@ export const GameScreen = ({ gameId, onLeaveGame }: GameScreenProps) => {
 
   // Render the appropriate screen based on current view
   return (
-    <SafeAreaView className="flex-1 bg-gray-800">
+    <SafeAreaView className="flex-1 bg-gray-900">
+      <Header />
       <SwipeNavigation onSwipeUp={handleSwipeUp} onSwipeDown={handleSwipeDown}>
         {currentView === 'hand' ? (
           <View className="flex-1 p-2">
             {/* Game Header */}
             <View className="mb-2 flex-row items-center justify-between rounded-lg bg-indigo-900 p-2">
               <View className="flex-row items-center">
-                <Text className="text-xl font-bold text-white">Unstable Engineers</Text>
                 <View className="ml-2 rounded bg-blue-600 px-2 py-0.5">
                   <Text className="text-xs text-white">Game #{gameId.slice(-4)}</Text>
                 </View>
