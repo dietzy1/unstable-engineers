@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  SafeAreaView,
+  Image,
+} from 'react-native';
 import { CardProps } from './Card';
 import { EffectProps } from './BuffDebuff';
 import { CardHand } from './CardHand';
@@ -18,6 +26,7 @@ interface PlayerPosition {
   cards: CardProps[];
   rotation: number; // Position in degrees around the circle
   isCurrentPlayer: boolean;
+  avatar?: string; // New: Avatar image path
 }
 
 interface GameTableProps {
@@ -127,6 +136,10 @@ export const GameTable = ({
           // Get action cards for this player
           const actionCards = player.cards.filter((card) => card.type === 'action');
 
+          // Count buffs and debuffs
+          const buffCount = player.effects.filter((effect) => effect.type === 'buff').length;
+          const debuffCount = player.effects.filter((effect) => effect.type === 'debuff').length;
+
           return (
             <View
               key={player.id}
@@ -137,23 +150,79 @@ export const GameTable = ({
                 },
               ]}>
               <TouchableOpacity
-                className={`items-center justify-center rounded-lg p-2 ${
+                className={`rounded-lg p-2 ${
                   player.isCurrentPlayer ? 'border-2 border-amber-500 bg-indigo-700' : 'bg-gray-700'
                 }`}
                 onPress={() => handlePlayerPress(player.id)}>
-                <View style={styles.playerContent}>
-                  <Text className="font-bold text-white">{player.name}</Text>
-                  <View className="mt-1 flex-row items-center">
-                    <View className="mr-1 h-5 w-5 items-center justify-center rounded-full bg-red-600">
-                      <Text className="text-xs font-bold text-white">❤️</Text>
-                    </View>
-                    <Text className="text-white">{player.lifeTotal}</Text>
+                {/* Player Card - enhanced with avatar and more info */}
+                <View className="items-center">
+                  {/* Avatar */}
+                  <View
+                    className={`mb-1 h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 ${
+                      player.isCurrentPlayer ? 'border-amber-400' : 'border-gray-600'
+                    }`}>
+                    {player.avatar ? (
+                      <Image
+                        source={
+                          typeof player.avatar === 'string' ? { uri: player.avatar } : player.avatar
+                        }
+                        className="h-12 w-12"
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View className="h-full w-full items-center justify-center bg-gray-600">
+                        <Text className="text-lg font-bold text-white">
+                          {player.name.charAt(0)}
+                        </Text>
+                      </View>
+                    )}
                   </View>
-                  <View className="mt-1 flex-row items-center">
-                    <View className="mr-1 h-5 w-5 items-center justify-center rounded-full bg-blue-600">
-                      <Text className="text-xs font-bold text-white">🃏</Text>
+
+                  {/* Player Name */}
+                  <Text className="text-center text-sm font-bold text-white" numberOfLines={1}>
+                    {player.name}
+                  </Text>
+
+                  {/* Stats Row */}
+                  <View className="mt-1 flex-row justify-center space-x-2">
+                    {/* Life */}
+                    <View className="flex-row items-center">
+                      <View className="h-5 w-5 items-center justify-center rounded-full bg-red-600">
+                        <Text className="text-xs font-bold text-white">❤️</Text>
+                      </View>
+                      <Text className="ml-0.5 text-xs text-white">{player.lifeTotal}</Text>
                     </View>
-                    <Text className="text-white">{player.cards.length}</Text>
+
+                    {/* Cards */}
+                    <View className="flex-row items-center">
+                      <View className="h-5 w-5 items-center justify-center rounded-full bg-blue-600">
+                        <Text className="text-xs font-bold text-white">🃏</Text>
+                      </View>
+                      <Text className="ml-0.5 text-xs text-white">{player.cards.length}</Text>
+                    </View>
+                  </View>
+
+                  {/* Effects Row */}
+                  <View className="mt-1 flex-row justify-center space-x-2">
+                    {/* Buffs */}
+                    {buffCount > 0 && (
+                      <View className="flex-row items-center">
+                        <View className="h-5 w-5 items-center justify-center rounded-full bg-emerald-600">
+                          <Text className="text-xs font-bold text-white">⬆️</Text>
+                        </View>
+                        <Text className="ml-0.5 text-xs text-white">{buffCount}</Text>
+                      </View>
+                    )}
+
+                    {/* Debuffs */}
+                    {debuffCount > 0 && (
+                      <View className="flex-row items-center">
+                        <View className="h-5 w-5 items-center justify-center rounded-full bg-rose-600">
+                          <Text className="text-xs font-bold text-white">⬇️</Text>
+                        </View>
+                        <Text className="ml-0.5 text-xs text-white">{debuffCount}</Text>
+                      </View>
+                    )}
                   </View>
                 </View>
               </TouchableOpacity>
@@ -174,6 +243,7 @@ export const GameTable = ({
           debuffEffects={selectedPlayer.effects.filter((effect) => effect.type === 'debuff')}
           onClose={closePlayerDetail}
           onEffectPress={() => {}}
+          playerAvatar={selectedPlayer.avatar}
         />
       )}
     </SafeAreaView>
@@ -187,12 +257,9 @@ const styles = StyleSheet.create({
   },
   playerPosition: {
     position: 'absolute',
-    width: 100,
+    width: 110,
     height: 120,
     zIndex: 2,
-    alignItems: 'center',
-  },
-  playerContent: {
     alignItems: 'center',
   },
 });

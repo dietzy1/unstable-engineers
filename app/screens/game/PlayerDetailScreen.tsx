@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  Image,
+} from 'react-native';
 
 import { BuffDebuff, EffectProps } from '../../components/BuffDebuff';
 import { Card, CardProps } from '../../components/Card';
@@ -11,6 +19,7 @@ interface PlayerDetailScreenProps {
   debuffEffects: EffectProps[];
   onClose: () => void;
   onEffectPress?: (effect: EffectProps) => void;
+  playerAvatar?: string;
 }
 
 export const PlayerDetailScreen = ({
@@ -20,6 +29,7 @@ export const PlayerDetailScreen = ({
   debuffEffects,
   onClose,
   onEffectPress,
+  playerAvatar,
 }: PlayerDetailScreenProps) => {
   const handleEffectPress = (effect: EffectProps) => {
     if (onEffectPress) {
@@ -29,9 +39,23 @@ export const PlayerDetailScreen = ({
 
   return (
     <SafeAreaView className="flex-1 bg-gray-800">
-      {/* Header with player name and close button */}
+      {/* Header with player avatar, name and close button */}
       <View className="mb-4 flex-row items-center justify-between rounded-lg bg-indigo-900 p-3">
-        <Text className="text-xl font-bold text-white">{playerName}</Text>
+        <View className="flex-row items-center">
+          {/* Player Avatar */}
+          <View className="mr-3 h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 border-amber-400 bg-gray-700">
+            {playerAvatar ? (
+              <Image
+                source={typeof playerAvatar === 'string' ? { uri: playerAvatar } : playerAvatar}
+                className="h-12 w-12"
+                resizeMode="cover"
+              />
+            ) : (
+              <Text className="text-lg font-bold text-white">{playerName.charAt(0)}</Text>
+            )}
+          </View>
+          <Text className="text-xl font-bold text-white">{playerName}</Text>
+        </View>
         <TouchableOpacity className="rounded-lg bg-amber-600 px-4 py-1" onPress={onClose}>
           <Text className="font-bold text-white">CLOSE</Text>
         </TouchableOpacity>

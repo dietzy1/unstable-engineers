@@ -28,7 +28,6 @@ const MOCK_GAMES = [
     host: 'Player1',
     players: 1,
     maxPlayers: 4,
-    gameType: 'Casual',
   },
   {
     id: 'game2',
@@ -36,7 +35,6 @@ const MOCK_GAMES = [
     host: 'Wizard99',
     players: 2,
     maxPlayers: 2,
-    gameType: 'Ranked',
   },
   {
     id: 'game3',
@@ -44,7 +42,6 @@ const MOCK_GAMES = [
     host: 'GrandMaster',
     players: 3,
     maxPlayers: 8,
-    gameType: 'Tournament',
   },
   {
     id: 'game4',
@@ -52,7 +49,6 @@ const MOCK_GAMES = [
     host: 'Newbie',
     players: 1,
     maxPlayers: 4,
-    gameType: 'Casual',
   },
   {
     id: 'game5',
@@ -60,7 +56,6 @@ const MOCK_GAMES = [
     host: 'Champion',
     players: 1,
     maxPlayers: 2,
-    gameType: 'Ranked',
   },
 ];
 
@@ -219,9 +214,6 @@ export const GameSelectionScreen = ({
     }, 1500);
   };
 
-  const filteredGames =
-    filter === 'All' ? MOCK_GAMES : MOCK_GAMES.filter((game) => game.gameType === filter);
-
   const handleCreateGame = () => {
     if (newGameName.trim() === '') {
       Alert.alert('Error', 'Please enter a game name');
@@ -258,7 +250,7 @@ export const GameSelectionScreen = ({
           <View className="flex-row items-center">
             <Text className="text-xl font-bold text-white">Available Games</Text>
             <View className="ml-2 h-6 w-6 items-center justify-center rounded-full bg-indigo-700">
-              <Text className="text-xs font-bold text-white">{filteredGames.length}</Text>
+              <Text className="text-xs font-bold text-white">{MOCK_GAMES.length}</Text>
             </View>
           </View>
 
@@ -274,7 +266,7 @@ export const GameSelectionScreen = ({
           </View>
         ) : (
           <FlatList
-            data={filteredGames}
+            data={MOCK_GAMES}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <GameItem
