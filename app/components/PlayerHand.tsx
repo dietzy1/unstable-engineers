@@ -7,19 +7,21 @@ import { Card, CardProps } from './Card';
 interface PlayerHandProps {
   playerName: string;
   manaCards: CardProps[];
-  actionCards: CardProps[];
+  actionCards?: CardProps[];
   buffEffects?: EffectProps[];
   debuffEffects?: EffectProps[];
   onEffectPress?: (effect: EffectProps) => void;
+  maxDisplayCards?: number;
 }
 
 export const PlayerHand = ({
   playerName,
   manaCards,
-  actionCards,
+  actionCards = [],
   buffEffects = [],
   debuffEffects = [],
   onEffectPress,
+  maxDisplayCards = 5,
 }: PlayerHandProps) => {
   const [selectedCard, setSelectedCard] = useState<CardProps | null>(null);
   const [selectedEffect, setSelectedEffect] = useState<EffectProps | null>(null);
@@ -42,6 +44,12 @@ export const PlayerHand = ({
   const handleCloseEffectModal = () => {
     setSelectedEffect(null);
   };
+
+  // Limit the number of cards shown
+  const displayCards = actionCards.slice(0, maxDisplayCards);
+
+  // Calculate offset for each card
+  const cardOffset = 15; // pixels to offset each card
 
   return (
     <View className="flex-1">
@@ -124,7 +132,7 @@ export const PlayerHand = ({
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.cardContainer}>
-          {actionCards.map((card) => (
+          {displayCards.map((card, index) => (
             <Card key={card.id} {...card} onPress={() => handleCardPress(card)} />
           ))}
         </ScrollView>
@@ -237,7 +245,23 @@ export const PlayerHand = ({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    paddingVertical: 10,
+    padding: 5,
     paddingHorizontal: 5,
+  },
+  container: {
+    position: 'relative',
+    height: 60,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    position: 'absolute',
+    width: 40,
+    height: 60,
+    backgroundColor: '#6D28D9', // Purple color
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#8B5CF6',
   },
 });

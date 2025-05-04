@@ -123,7 +123,7 @@ export const GameOverviewScreen = ({
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-800">
+    <SafeAreaView className="flex-1">
       <View className="flex-1 p-2">
         {/* Game Header */}
         <View className="mb-2 flex-row items-center justify-between rounded-lg bg-indigo-900 p-2">
@@ -150,11 +150,6 @@ export const GameOverviewScreen = ({
           <Text className="text-white">Players: {playerNames.length}</Text>
         </View>
 
-        {/* Swipe Hint */}
-        <View className="mb-2 items-center">
-          <Text className="text-xs text-gray-400">Swipe down to view your hand</Text>
-        </View>
-
         {/* Effects Manager (conditional) */}
         {showEffectsManager && (
           <View className="mb-2">
@@ -176,7 +171,6 @@ export const GameOverviewScreen = ({
 
           {/* Center Cards */}
           <View className="mx-4 flex-1">
-            <Text className="mb-2 text-center font-bold text-white">Available Cards</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -197,13 +191,6 @@ export const GameOverviewScreen = ({
             />
             <Text className="mt-2 text-sm text-gray-300">Mana Deck</Text>
           </View>
-        </View>
-
-        {/* Bottom Info */}
-        <View className="mt-2 rounded-lg bg-gray-900 p-2">
-          <Text className="text-center text-white">
-            Tap on a deck to draw a card or select from available cards
-          </Text>
         </View>
       </View>
 
