@@ -22,8 +22,11 @@ const CIRCLE_RADIUS = Math.min(width, height) * 0.35;
 interface GameTableProps {
   playerData: PlayerData[];
   currentPlayerId: string;
+  currentTurnPlayerId: string;
+  turnTimeRemaining: number;
   onPlayerPress: (playerId: string) => void;
   onCenterPress: () => void;
+  onEndTurn?: () => void;
   onLeaveGame: () => void;
   gameCards: CardProps[];
 }
@@ -31,8 +34,11 @@ interface GameTableProps {
 export const GameTable = ({
   playerData,
   currentPlayerId,
+  currentTurnPlayerId,
+  turnTimeRemaining,
   onPlayerPress,
   onCenterPress,
+  onEndTurn,
   onLeaveGame,
   gameCards = [],
 }: GameTableProps) => {
@@ -80,6 +86,16 @@ export const GameTable = ({
     setSelectedPlayerId(null);
   };
 
+  // Format time remaining as minutes:seconds
+  const formatTimeRemaining = () => {
+    const minutes = Math.floor(turnTimeRemaining / 60);
+    const seconds = turnTimeRemaining % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  // Is it the current user's turn?
+  const isCurrentUserTurn = currentTurnPlayerId === currentPlayerId;
+
   // Get the selected player data
   const selectedPlayer = selectedPlayerId
     ? playerData.find((player) => player.id === selectedPlayerId)
@@ -90,14 +106,35 @@ export const GameTable = ({
       <Header />
 
       {/* Game controls */}
-      <View className="mb-4 flex-row items-center justify-between">
-        <TouchableOpacity className="rounded-lg bg-red-600 px-3 py-2" onPress={onLeaveGame}>
-          <Text className="font-bold text-white">Leave Game</Text>
-        </TouchableOpacity>
+      <View className="mb-4 px-3">
+        {/* Turn indicator and timer */}
+        <View className="mb-2 items-center">
+          <Text className="text-lg font-bold text-white">
+            {isCurrentUserTurn
+              ? 'Your Turn'
+              : `${playerData.find((p) => p.id === currentTurnPlayerId)?.name}'s Turn`}
+          </Text>
+          <View className="mt-1 flex-row items-center">
+            <View className="mr-2 h-4 w-4 rounded-full bg-amber-500" />
+            <Text className="text-md font-semibold text-amber-300">{formatTimeRemaining()}</Text>
+          </View>
+        </View>
 
-        <TouchableOpacity className="rounded-lg bg-indigo-600 px-3 py-2">
-          <Text className="font-bold text-white">End Turn</Text>
-        </TouchableOpacity>
+        {/* Game controls */}
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity className="rounded-lg bg-red-600 px-3 py-2" onPress={onLeaveGame}>
+            <Text className="font-bold text-white">Leave Game</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className={`rounded-lg px-3 py-2 ${isCurrentUserTurn ? 'bg-indigo-600' : 'bg-gray-600'}`}
+            onPress={isCurrentUserTurn ? onEndTurn : undefined}
+            disabled={!isCurrentUserTurn || !onEndTurn}>
+            <Text className={`font-bold ${isCurrentUserTurn ? 'text-white' : 'text-gray-400'}`}>
+              End Turn
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Circular Game Board */}
@@ -152,6 +189,9 @@ export const GameTable = ({
           const buffCount = player.effects.filter((effect) => effect.type === 'buff').length;
           const debuffCount = player.effects.filter((effect) => effect.type === 'debuff').length;
 
+          // Is it this player's turn?
+          const isPlayerTurn = player.id === currentTurnPlayerId;
+
           return (
             <View
               key={player.id}
@@ -163,29 +203,30 @@ export const GameTable = ({
               ]}>
               <TouchableOpacity
                 className={`rounded-lg p-2 ${
-                  player.isCurrentPlayer ? 'border-2 border-amber-500 bg-indigo-700' : 'bg-gray-700'
+                  player.isCurrentPlayer
+                    ? 'border-2 border-amber-500 bg-indigo-700'
+                    : isPlayerTurn
+                      ? 'border-2 border-amber-500 bg-gray-700'
+                      : 'bg-gray-700'
                 }`}
                 onPress={() => handlePlayerPress(player.id)}>
-                {/* Card Hand below the player, positioned with the same angle */}
-                {actionCards.length > 0 && (
-                  <View
-                    style={{
-                      transform: [{ rotate: `${player.rotation - 90}deg` }],
-                      position: 'absolute',
-                      top: 90,
-                      alignItems: 'center',
-                      width: 150,
-                    }}>
-                    <CardHand cards={actionCards} maxDisplayCards={5} />
-                  </View>
-                )}
-
                 {/* Player Card - enhanced with avatar and more info */}
                 <View className="items-center">
+                  {/* Active Turn Indicator */}
+                  {isPlayerTurn && (
+                    <View className="absolute -right-3 -top-3 h-6 w-6 items-center justify-center rounded-full bg-amber-500">
+                      <Text className="text-xs font-bold text-white">⏰</Text>
+                    </View>
+                  )}
+
                   {/* Avatar */}
                   <View
                     className={`mb-1 h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 ${
-                      player.isCurrentPlayer ? 'border-amber-400' : 'border-gray-600'
+                      player.isCurrentPlayer
+                        ? 'border-amber-400'
+                        : isPlayerTurn
+                          ? 'border-amber-400'
+                          : 'border-gray-600'
                     }`}>
                     {player.avatar ? (
                       <Image
@@ -252,6 +293,19 @@ export const GameTable = ({
                   </View>
                 </View>
               </TouchableOpacity>
+              {/* Card Hand below the player, positioned with the same angle */}
+              {actionCards.length > 0 && (
+                <View
+                  style={{
+                    transform: [{ rotate: `${player.rotation - 90}deg` }],
+                    position: 'absolute',
+                    top: 90,
+                    alignItems: 'center',
+                    width: 150,
+                  }}>
+                  <CardHand cards={actionCards} maxDisplayCards={5} />
+                </View>
+              )}
             </View>
           );
         })}

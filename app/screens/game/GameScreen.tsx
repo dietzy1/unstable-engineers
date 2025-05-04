@@ -73,6 +73,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     cards: [
       { id: 'p2m1', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
       { id: 'p2m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
+      ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
   },
@@ -85,6 +86,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     cards: [
       { id: 'p3m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
       { id: 'p3m2', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
+      ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
   },
@@ -97,6 +99,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     cards: [
       { id: 'p4m1', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
       { id: 'p4m2', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
+      ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
   },
@@ -109,6 +112,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     cards: [
       { id: 'p5m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
       { id: 'p5m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
+      ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
   },
@@ -121,6 +125,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     cards: [
       { id: 'p6m1', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
       { id: 'p6m2', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
+      ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
   },
@@ -133,6 +138,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     cards: [
       { id: 'p7m1', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
       { id: 'p7m2', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
+      ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
   },
@@ -145,6 +151,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     cards: [
       { id: 'p8m1', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
       { id: 'p8m2', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
+      ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
   },
@@ -176,6 +183,9 @@ interface NewGameScreenProps {
   userProfile?: { username: string; avatar: string } | null;
 }
 
+// Maximum turn time in seconds
+const MAX_TURN_TIME = 60;
+
 export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenProps) => {
   // Game state
   const [players, setPlayers] = useState<PlayerData[]>(() => {
@@ -198,12 +208,64 @@ export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenPr
   const [currentView, setCurrentView] = useState<'main' | 'overview' | 'playerDetail'>('main');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
+  // Turn management state
+  const [currentTurnPlayerId, setCurrentTurnPlayerId] = useState<string>('player1');
+  const [turnTimeRemaining, setTurnTimeRemaining] = useState<number>(MAX_TURN_TIME);
+  const [turnTimerActive, setTurnTimerActive] = useState<boolean>(true);
+
   // Notification state
   const [notification, setNotification] = useState({
     visible: false,
     cardName: '',
     type: 'action' as CardType,
   });
+
+  // Turn timer effect
+  useEffect(() => {
+    let timerInterval: NodeJS.Timeout;
+
+    if (turnTimerActive && turnTimeRemaining > 0) {
+      timerInterval = setInterval(() => {
+        setTurnTimeRemaining((prev) => {
+          if (prev <= 1) {
+            // Time's up, end turn
+            clearInterval(timerInterval);
+            handleEndTurn();
+            return MAX_TURN_TIME;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerInterval) clearInterval(timerInterval);
+    };
+  }, [turnTimerActive, turnTimeRemaining, currentTurnPlayerId]);
+
+  // Handle end of turn
+  const handleEndTurn = () => {
+    // Find the index of the current player
+    const currentPlayerIndex = players.findIndex((player) => player.id === currentTurnPlayerId);
+
+    // Calculate the next player index (circular)
+    const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    const nextPlayerId = players[nextPlayerIndex].id;
+
+    // Update current turn player
+    setCurrentTurnPlayerId(nextPlayerId);
+
+    // Reset turn timer
+    setTurnTimeRemaining(MAX_TURN_TIME);
+
+    // Update player isCurrentPlayer property
+    setPlayers((prevPlayers) => {
+      return prevPlayers.map((player) => ({
+        ...player,
+        isCurrentPlayer: player.id === nextPlayerId,
+      }));
+    });
+  };
 
   // Handle player selection
   const handlePlayerPress = (playerId: string) => {
@@ -274,6 +336,9 @@ export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenPr
     setNotification((prev) => ({ ...prev, visible: false }));
   };
 
+  // Check if it's the current user's turn
+  const isCurrentUserTurn = currentTurnPlayerId === 'player1';
+
   // Selected player data
   const selectedPlayer = selectedPlayerId
     ? players.find((player) => player.id === selectedPlayerId)
@@ -286,8 +351,11 @@ export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenPr
         <GameTable
           playerData={players}
           currentPlayerId="player1" // Always current player ID
+          currentTurnPlayerId={currentTurnPlayerId}
+          turnTimeRemaining={turnTimeRemaining}
           onPlayerPress={handlePlayerPress}
           onCenterPress={handleCenterPress}
+          onEndTurn={isCurrentUserTurn ? handleEndTurn : undefined}
           onLeaveGame={onLeaveGame}
           gameCards={gameCards}
         />
