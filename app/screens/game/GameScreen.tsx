@@ -124,11 +124,26 @@ const GAME_CARDS: CardProps[] = [
 interface NewGameScreenProps {
   gameId: string;
   onLeaveGame: () => void;
+  userProfile?: { username: string; avatar: string } | null;
 }
 
-export const GameScreen = ({ gameId, onLeaveGame }: NewGameScreenProps) => {
+export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenProps) => {
   // Game state
-  const [players, setPlayers] = useState<PlayerData[]>(SAMPLE_PLAYERS);
+  const [players, setPlayers] = useState<PlayerData[]>(() => {
+    // Update player name if userProfile is available
+    if (userProfile?.username) {
+      return SAMPLE_PLAYERS.map((player) => {
+        if (player.id === 'player1') {
+          return {
+            ...player,
+            name: userProfile.username,
+          };
+        }
+        return player;
+      });
+    }
+    return SAMPLE_PLAYERS;
+  });
   const [gameCards, setGameCards] = useState<CardProps[]>(GAME_CARDS);
   const [currentView, setCurrentView] = useState<'main' | 'overview' | 'playerDetail'>('main');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
