@@ -9,7 +9,6 @@ import {
   Image,
 } from 'react-native';
 import { CardProps } from './Card';
-import { CardHand } from './CardHand';
 import { PlayerDetailScreen } from 'screens/game/PlayerDetailScreen';
 import { Header } from './Header';
 import { AVATARS } from 'screens/lobby/GameSelectionScreen';
@@ -293,19 +292,6 @@ export const GameTable = ({
                   </View>
                 </View>
               </TouchableOpacity>
-              {/* Card Hand below the player, positioned with the same angle */}
-              {actionCards.length > 0 && (
-                <View
-                  style={{
-                    transform: [{ rotate: `${player.rotation - 90}deg` }],
-                    position: 'absolute',
-                    top: 90,
-                    alignItems: 'center',
-                    width: 150,
-                  }}>
-                  <CardHand cards={actionCards} maxDisplayCards={5} />
-                </View>
-              )}
             </View>
           );
         })}
