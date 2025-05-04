@@ -1,0 +1,17 @@
+Q: 
+"How do i build the application?, .NET or Go?, WebSockets or REST?, How to model game state?, How to handle events?, How to manage state?"
+
+A:
+"Use WebSockets for game‑state messaging. Expose a REST API only for user registration, deck management and non‑real‑time actions. 
+Persist lobby and player state in an in‑memory data store (Redis) backed by event sourcing in a durable store (PostgreSQL or similar). 
+Broadcast state diffs—“Player X drew card Y,” “Player Z spent 3 mana to cast effect E”—via WebSocket channels per lobby.
+
+Use Go for the backend if you expect high concurrency and low‑latency real‑time messaging; its goroutines and channels simplify hundreds of simultaneous connections. 
+Use .NET only if your team has deep expertise or you require tight Windows/.NET integration.
+
+Model cards and effects with a data‑driven strategy pattern: each card type is defined by a JSON/YAML schema listing its triggers, costs, effects and targets. 
+Effects implement a common interface—Resolve(playerState, gameState) mutates state and emits events. Register effect handlers in a factory keyed by card ID or effect type.
+
+Maintain per‑player and per‑lobby state as aggregate objects. 
+On each client action, validate against the aggregate, apply changes, append an event to the log, and publish the resulting event(s) to all subscribers of that lobby’s WebSocket channel. 
+Clients apply events locally to update UI."
