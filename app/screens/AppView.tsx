@@ -57,8 +57,8 @@ export const AppView = () => {
   };
 
   // Handler for creating a new game
-  const handleCreateGame = (gameName: string, maxPlayers: number, gameType: string) => {
-    console.log(`Creating game: ${gameName} with ${maxPlayers} players, type: ${gameType}`);
+  const handleCreateGame = (gameName: string, maxPlayers: number) => {
+    console.log(`Creating game: ${gameName} with ${maxPlayers} players`);
     setIsLoading(true);
 
     // Simulate API call to create game

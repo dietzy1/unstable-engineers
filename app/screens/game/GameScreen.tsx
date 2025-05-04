@@ -42,13 +42,13 @@ const SAMPLE_ACTION_CARDS: CardProps[] = [
 ];
 
 // Player type matching the CircularGameScreen component
-interface PlayerData {
+export interface PlayerData {
   id: string;
   name: string;
+  avatar: string;
   lifeTotal: number;
   effects: EffectProps[];
   cards: CardProps[];
-  rotation: number;
   isCurrentPlayer: boolean;
 }
 
@@ -57,94 +57,95 @@ const SAMPLE_PLAYERS: PlayerData[] = [
   {
     id: 'player1',
     name: 'You',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [...SAMPLE_MANA_CARDS, ...SAMPLE_ACTION_CARDS],
-    rotation: 270, // Bottom
+
     isCurrentPlayer: true,
   },
   {
     id: 'player2',
     name: 'Opponent 1',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [
       { id: 'p2m1', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
       { id: 'p2m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
     ],
-    rotation: 0, // Right
     isCurrentPlayer: false,
   },
   {
     id: 'player3',
     name: 'Opponent 2',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [
       { id: 'p3m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
       { id: 'p3m2', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
     ],
-    rotation: 45, // Right-Top
     isCurrentPlayer: false,
   },
   {
     id: 'player4',
     name: 'Opponent 3',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [
       { id: 'p4m1', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
       { id: 'p4m2', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
     ],
-    rotation: 90, // Top
     isCurrentPlayer: false,
   },
   {
     id: 'player5',
     name: 'Opponent 4',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [
       { id: 'p5m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
       { id: 'p5m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
     ],
-    rotation: 135, // Top-Left
     isCurrentPlayer: false,
   },
   {
     id: 'player6',
     name: 'Opponent 5',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [
       { id: 'p6m1', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
       { id: 'p6m2', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
     ],
-    rotation: 180, // Left
     isCurrentPlayer: false,
   },
   {
     id: 'player7',
     name: 'Opponent 6',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [
       { id: 'p7m1', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
       { id: 'p7m2', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
     ],
-    rotation: 225, // Bottom-Left
     isCurrentPlayer: false,
   },
   {
     id: 'player8',
     name: 'Opponent 7',
+    avatar: 'avatar1.png',
     lifeTotal: 20,
     effects: [],
     cards: [
       { id: 'p8m1', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
       { id: 'p8m2', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
     ],
-    rotation: 315, // Bottom-Right
     isCurrentPlayer: false,
   },
 ];
@@ -192,6 +193,7 @@ export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenPr
     }
     return SAMPLE_PLAYERS;
   });
+
   const [gameCards, setGameCards] = useState<CardProps[]>(GAME_CARDS);
   const [currentView, setCurrentView] = useState<'main' | 'overview' | 'playerDetail'>('main');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);

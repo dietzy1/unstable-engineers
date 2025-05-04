@@ -60,7 +60,7 @@ const MOCK_GAMES = [
 ];
 
 // Mock avatars
-const AVATARS = [
+export const AVATARS = [
   { id: 'avatar1', source: require('../../assets/avatars/avatar1.png') },
   { id: 'avatar2', source: require('../../assets/avatars/avatar2.png') },
   { id: 'avatar3', source: require('../../assets/avatars/avatar3.png') },
@@ -134,7 +134,7 @@ const GameItem = ({ id, name, host, players, maxPlayers, onJoin }: GameItemProps
 
 interface GameSelectionScreenProps {
   onJoinGame: (gameId: string) => void;
-  onCreateGame: (gameName: string, maxPlayers: number, gameType: string) => void;
+  onCreateGame: (gameName: string, maxPlayers: number) => void;
   onProfileUpdate?: (profile: { username: string; avatar: string }) => void;
 }
 
@@ -148,8 +148,6 @@ export const GameSelectionScreen = ({
   const [refreshing, setRefreshing] = useState(false);
   const [newGameName, setNewGameName] = useState('');
   const [maxPlayers, setMaxPlayers] = useState('4');
-  const [gameType, setGameType] = useState('Casual');
-  const [filter, setFilter] = useState('All');
 
   // User profile state
   const [userId, setUserId] = useState<string>('');
@@ -226,11 +224,10 @@ export const GameSelectionScreen = ({
       return;
     }
 
-    onCreateGame(newGameName, maxPlayersNum, gameType);
+    onCreateGame(newGameName, maxPlayersNum);
     setCreateModalVisible(false);
     setNewGameName('');
     setMaxPlayers('4');
-    setGameType('Casual');
   };
 
   return (
@@ -279,18 +276,6 @@ export const GameSelectionScreen = ({
               />
             )}
             showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View className="items-center justify-center rounded-xl bg-gray-800/50 p-10">
-                <Text className="text-center text-gray-400">
-                  No games available for this filter.
-                </Text>
-                <TouchableOpacity
-                  className="mt-4 rounded-lg bg-indigo-700 px-4 py-2"
-                  onPress={() => setFilter('All')}>
-                  <Text className="font-medium text-white">Show All Games</Text>
-                </TouchableOpacity>
-              </View>
-            }
           />
         )}
 

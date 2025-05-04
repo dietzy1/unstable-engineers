@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,28 +9,18 @@ import {
   Image,
 } from 'react-native';
 import { CardProps } from './Card';
-import { EffectProps } from './BuffDebuff';
 import { CardHand } from './CardHand';
 import { PlayerDetailScreen } from 'screens/game/PlayerDetailScreen';
 import { Header } from './Header';
+import { AVATARS } from 'screens/lobby/GameSelectionScreen';
+import { PlayerData } from 'screens/game/GameScreen';
 
 // Get screen dimensions for responsive layout
 const { width, height } = Dimensions.get('window');
 const CIRCLE_RADIUS = Math.min(width, height) * 0.35;
 
-interface PlayerPosition {
-  id: string;
-  name: string;
-  lifeTotal: number;
-  effects: EffectProps[];
-  cards: CardProps[];
-  rotation: number; // Position in degrees around the circle
-  isCurrentPlayer: boolean;
-  avatar?: string; // New: Avatar image path
-}
-
 interface GameTableProps {
-  playerData: PlayerPosition[];
+  playerData: PlayerData[];
   currentPlayerId: string;
   onPlayerPress: (playerId: string) => void;
   onCenterPress: () => void;
@@ -49,11 +39,33 @@ export const GameTable = ({
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [showPlayerDetail, setShowPlayerDetail] = useState(false);
 
-  // Always position the current player at the bottom (270 degrees)
-  const adjustedPlayerData = playerData.map((player) => ({
-    ...player,
-    rotation: player.isCurrentPlayer ? 270 : player.rotation,
-  }));
+  // Calculate player positions around the circle
+  const positionedPlayers = useMemo(() => {
+    const totalPlayers = playerData.length;
+
+    // Find current player index
+    const currentPlayerIndex = playerData.findIndex((player) => player.isCurrentPlayer);
+
+    return playerData.map((player, index) => {
+      // Calculate rotation in degrees
+      let rotation = 90; // Default position for current player
+
+      if (!player.isCurrentPlayer) {
+        // Calculate positions for other players to distribute them around the circle
+        // Get the relative position from current player
+        const relativeIndex = (index - currentPlayerIndex + totalPlayers) % totalPlayers;
+        // Calculate degrees per player and distribute
+        const degreesPerPlayer = 360 / totalPlayers;
+        // Calculate rotation, ensuring current player stays at 90 degrees
+        rotation = (90 + relativeIndex * degreesPerPlayer) % 360;
+      }
+
+      return {
+        ...player,
+        rotation,
+      };
+    });
+  }, [playerData]);
 
   const handlePlayerPress = (playerId: string) => {
     setSelectedPlayerId(playerId);
@@ -127,7 +139,7 @@ export const GameTable = ({
         </TouchableOpacity>
 
         {/* Players positioned around the circle */}
-        {adjustedPlayerData.map((player) => {
+        {positionedPlayers.map((player) => {
           // Calculate position based on angle
           const angle = (player.rotation * Math.PI) / 180;
           const x = CIRCLE_RADIUS * Math.cos(angle);
@@ -154,6 +166,20 @@ export const GameTable = ({
                   player.isCurrentPlayer ? 'border-2 border-amber-500 bg-indigo-700' : 'bg-gray-700'
                 }`}
                 onPress={() => handlePlayerPress(player.id)}>
+                {/* Card Hand below the player, positioned with the same angle */}
+                {actionCards.length > 0 && (
+                  <View
+                    style={{
+                      transform: [{ rotate: `${player.rotation - 90}deg` }],
+                      position: 'absolute',
+                      top: 90,
+                      alignItems: 'center',
+                      width: 150,
+                    }}>
+                    <CardHand cards={actionCards} maxDisplayCards={5} />
+                  </View>
+                )}
+
                 {/* Player Card - enhanced with avatar and more info */}
                 <View className="items-center">
                   {/* Avatar */}
@@ -164,7 +190,7 @@ export const GameTable = ({
                     {player.avatar ? (
                       <Image
                         source={
-                          typeof player.avatar === 'string' ? { uri: player.avatar } : player.avatar
+                          AVATARS.find((a) => a.id === player.avatar.replace('.png', ''))?.source
                         }
                         className="h-12 w-12"
                         resizeMode="cover"
@@ -226,9 +252,6 @@ export const GameTable = ({
                   </View>
                 </View>
               </TouchableOpacity>
-
-              {/* Card Hand below the player */}
-              {actionCards.length > 0 && <CardHand cards={player.cards} maxDisplayCards={5} />}
             </View>
           );
         })}
