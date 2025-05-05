@@ -32,3 +32,6 @@
 
 - **AGILE** - "Your team is now Agile. Gain 1 extra action per turn."
 - **SCRUM** - "Your team has implemented Scrum. Skip your turn
+- **NullPointer Exception** - "Your code has thrown a Null Pointer Exception. Lose 1 action."
+- **Code Review** - "Your code has been reviewed. Gain 1 extra action."
+- **Code Freeze** - "Your code has been frozen. Lose 1 action."
