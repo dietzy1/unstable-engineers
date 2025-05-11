@@ -8,11 +8,12 @@ import {
   SafeAreaView,
   Image,
 } from 'react-native';
-import { CardProps } from './Card';
-import { PlayerDetailScreen } from 'screens/game/PlayerDetailScreen';
-import { Header } from './Header';
-import { AVATARS } from 'screens/lobby/GameSelectionScreen';
 import { PlayerData } from 'screens/game/GameScreen';
+import { PlayerDetailScreen } from 'screens/game/PlayerDetailScreen';
+import { AVATARS } from 'screens/lobby/GameSelectionScreen';
+
+import { CardProps } from './Card';
+import { Header } from './Header';
 import { PlayerInformation } from './PlayerInformation';
 
 // Get screen dimensions for responsive layout
@@ -106,7 +107,7 @@ export const GameTable = ({
       <Header />
 
       {/* Game controls */}
-      <View className="mb-4 px-3">
+      <View className="mb-0 px-3">
         {/* Turn indicator and timer */}
         <View className="mb-2 items-center">
           <Text className="text-lg font-bold text-white">
@@ -204,19 +205,6 @@ export const GameTable = ({
           );
         })}
       </View>
-
-      {/* Player Detail Screen (Modal) */}
-      {showPlayerDetail && selectedPlayer && (
-        <PlayerDetailScreen
-          playerName={selectedPlayer.name}
-          manaCards={selectedPlayer.cards.filter((card) => card.type === 'mana')}
-          buffEffects={selectedPlayer.effects.filter((effect) => effect.type === 'buff')}
-          debuffEffects={selectedPlayer.effects.filter((effect) => effect.type === 'debuff')}
-          onClose={closePlayerDetail}
-          onEffectPress={() => {}}
-          playerAvatar={selectedPlayer.avatar}
-        />
-      )}
     </SafeAreaView>
   );
 };
@@ -228,8 +216,8 @@ const styles = StyleSheet.create({
   },
   playerPosition: {
     position: 'absolute',
-    width: 110,
-    height: 120,
+    width: 90,
+    height: 100,
     zIndex: 2,
     alignItems: 'center',
   },

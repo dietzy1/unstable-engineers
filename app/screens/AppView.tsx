@@ -1,19 +1,34 @@
-import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect } from 'react';
 
 import { LoadingScreen } from './LoadingScreen';
 import { GameScreen } from './game/GameScreen';
-import { GameSelectionScreen } from './lobby/GameSelectionScreen';
+import { GameSelectionScreen, MOCK_GAMES } from './lobby/GameSelectionScreen';
+import { LobbyScreen } from './lobby/LobbyScreen';
 
 // Storage keys
 const USER_PROFILE_KEY = 'user_profile';
 
+// Define game type to match MOCK_GAMES
+interface Game {
+  id: string;
+  name: string;
+  host: string;
+  players: number;
+  maxPlayers: number;
+}
+
 export const AppView = () => {
   // Track connection state and active game
   const [isConnected, setIsConnected] = useState(false);
+  const [inLobby, setInLobby] = useState(false);
   const [activeGameId, setActiveGameId] = useState<string | null>(null);
+  const [gameName, setGameName] = useState<string>('');
+  const [maxPlayers, setMaxPlayers] = useState<number>(4);
+  const [isHost, setIsHost] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<{ username: string; avatar: string } | null>(null);
+  const [userId, setUserId] = useState<string>('');
 
   // Simulate checking if user is already connected to a game
   useEffect(() => {
@@ -29,12 +44,20 @@ export const AppView = () => {
           setUserProfile(JSON.parse(profileJson));
         }
 
+        // Get user ID from AsyncStorage
+        const storedUserId = await AsyncStorage.getItem('user_id');
+        if (storedUserId) {
+          setUserId(storedUserId);
+        }
+
         // For demo purposes, default to not connected
         setIsConnected(false);
+        setInLobby(false);
         setActiveGameId(null);
       } catch (error) {
         console.error('Error checking connection:', error);
         setIsConnected(false);
+        setInLobby(false);
       } finally {
         setIsLoading(false);
       }
@@ -51,7 +74,19 @@ export const AppView = () => {
     // Simulate API call to join game
     setTimeout(() => {
       setActiveGameId(gameId);
-      setIsConnected(true);
+
+      // Find the game in the mock data to get its name
+      const foundGame = MOCK_GAMES.find((game: Game) => game.id === gameId);
+      if (foundGame) {
+        setGameName(foundGame.name);
+        setMaxPlayers(foundGame.maxPlayers);
+      } else {
+        setGameName('Unknown Game');
+        setMaxPlayers(4);
+      }
+
+      setIsHost(false);
+      setInLobby(true);
       setIsLoading(false);
     }, 1000);
   };
@@ -67,7 +102,10 @@ export const AppView = () => {
       // and get back a game ID
       const mockGameId = `game-${Date.now()}`;
       setActiveGameId(mockGameId);
-      setIsConnected(true);
+      setGameName(gameName);
+      setMaxPlayers(maxPlayers);
+      setIsHost(true);
+      setInLobby(true);
       setIsLoading(false);
     }, 1000);
   };
@@ -77,14 +115,28 @@ export const AppView = () => {
     setUserProfile(profile);
   };
 
-  // Handler for leaving a game
-  const handleLeaveGame = () => {
+  // Handler for leaving a game or lobby
+  const handleLeaveLobbyOrGame = () => {
     setIsLoading(true);
 
     // Simulate API call to leave game
     setTimeout(() => {
       setIsConnected(false);
+      setInLobby(false);
       setActiveGameId(null);
+      setIsLoading(false);
+    }, 800);
+  };
+
+  // Handler for starting the game from the lobby
+  const handleStartGame = () => {
+    console.log(`Starting game: ${activeGameId}`);
+    setIsLoading(true);
+
+    // Simulate API call to start the game
+    setTimeout(() => {
+      setInLobby(false);
+      setIsConnected(true);
       setIsLoading(false);
     }, 800);
   };
@@ -95,13 +147,35 @@ export const AppView = () => {
   }
 
   // Render the appropriate screen based on connection state
-  return isConnected && activeGameId ? (
-    <GameScreen onLeaveGame={handleLeaveGame} gameId={activeGameId} userProfile={userProfile} />
-  ) : (
-    <GameSelectionScreen
-      onJoinGame={handleJoinGame}
-      onCreateGame={handleCreateGame}
-      onProfileUpdate={handleProfileUpdate}
-    />
-  );
+  if (isConnected && activeGameId) {
+    return (
+      <GameScreen
+        onLeaveGame={handleLeaveLobbyOrGame}
+        gameId={activeGameId}
+        userProfile={userProfile}
+      />
+    );
+  } else if (inLobby && activeGameId) {
+    return (
+      <LobbyScreen
+        gameId={activeGameId}
+        gameName={gameName}
+        maxPlayers={maxPlayers}
+        isHost={isHost}
+        currentUserId={userId}
+        currentUserName={userProfile?.username || 'Player'}
+        currentUserAvatar={userProfile?.avatar || 'avatar1'}
+        onStartGame={handleStartGame}
+        onLeaveLobby={handleLeaveLobbyOrGame}
+      />
+    );
+  } else {
+    return (
+      <GameSelectionScreen
+        onJoinGame={handleJoinGame}
+        onCreateGame={handleCreateGame}
+        onProfileUpdate={handleProfileUpdate}
+      />
+    );
+  }
 };

@@ -5,6 +5,7 @@ import { AppView } from 'screens/AppView';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import './global.css';
 
 const USER_ID_KEY = 'unique_user_id';
@@ -35,9 +36,11 @@ export default function App() {
   console.log(userId);
 
   return (
-    <SafeAreaProvider>
-      <AppView />
-      <StatusBar style="light" />
-    </SafeAreaProvider>
+    <GestureHandlerRootView>
+      <SafeAreaProvider>
+        <AppView />
+        <StatusBar style="light" />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

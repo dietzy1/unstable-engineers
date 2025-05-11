@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Header } from 'components/Header';
 import React, { useState, useEffect } from 'react';
 import {
@@ -12,7 +13,6 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { v4 as uuidv4 } from 'uuid';
 import 'react-native-get-random-values';
 
@@ -21,7 +21,7 @@ const USER_PROFILE_KEY = 'user_profile';
 const USER_ID_KEY = 'user_id';
 
 // Mock data for available games
-const MOCK_GAMES = [
+export const MOCK_GAMES = [
   {
     id: 'game1',
     name: 'Dragon Battle',

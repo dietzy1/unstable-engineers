@@ -1,11 +1,12 @@
+import { GameTable } from 'components/GameTable';
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-native';
+
 import { GameOverviewScreen } from './GameOverviewScreen';
 import { PlayerDetailScreen } from './PlayerDetailScreen';
-import { CardProps, CardType } from '../../components/Card';
 import { EffectProps } from '../../components/BuffDebuff';
+import { CardProps, CardType } from '../../components/Card';
 import { CardAddedNotification } from '../../components/CardAddedNotification';
-import { GameTable } from 'components/GameTable';
 
 // Sample data for demonstration
 const SAMPLE_MANA_CARDS: CardProps[] = [
@@ -41,6 +42,56 @@ const SAMPLE_ACTION_CARDS: CardProps[] = [
   },
 ];
 
+const SAMPLE_EFFECTS: EffectProps[] = [
+  {
+    id: 'e1',
+    name: 'Strength',
+    type: 'buff',
+    description: 'Increases attack power by 2',
+    duration: 3,
+    value: 2,
+  },
+  {
+    id: 'e2',
+    name: 'Protection',
+    type: 'buff',
+    description: 'Prevents the next 3 damage',
+    duration: 3,
+    value: 3,
+  },
+  {
+    id: 'e3',
+    name: 'Regeneration',
+    type: 'buff',
+    description: 'Recover 1 health each turn',
+    duration: 'permanent',
+    value: 1,
+  },
+  {
+    id: 'e4',
+    name: 'Poison',
+    type: 'debuff',
+    description: 'Take 1 damage each turn',
+    duration: 4,
+    value: -1,
+  },
+  {
+    id: 'e5',
+    name: 'Weakness',
+    type: 'debuff',
+    description: 'Reduces attack power by 1',
+    duration: 2,
+    value: -1,
+  },
+  {
+    id: 'e6',
+    name: 'Stun',
+    type: 'debuff',
+    description: 'Skip your next turn',
+    duration: 1,
+  },
+];
+
 // Player type matching the CircularGameScreen component
 export interface PlayerData {
   id: string;
@@ -59,7 +110,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     name: 'You',
     avatar: 'avatar1.png',
     lifeTotal: 20,
-    effects: [],
+    effects: [...SAMPLE_EFFECTS],
     cards: [...SAMPLE_MANA_CARDS, ...SAMPLE_ACTION_CARDS],
 
     isCurrentPlayer: true,
@@ -69,7 +120,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     name: 'Opponent 1',
     avatar: 'avatar1.png',
     lifeTotal: 20,
-    effects: [],
+    effects: [...SAMPLE_EFFECTS],
     cards: [
       { id: 'p2m1', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
       { id: 'p2m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
@@ -82,7 +133,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     name: 'Opponent 2',
     avatar: 'avatar1.png',
     lifeTotal: 20,
-    effects: [],
+    effects: [...SAMPLE_EFFECTS],
     cards: [
       { id: 'p3m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
       { id: 'p3m2', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
@@ -95,7 +146,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     name: 'Opponent 3',
     avatar: 'avatar1.png',
     lifeTotal: 20,
-    effects: [],
+    effects: [...SAMPLE_EFFECTS],
     cards: [
       { id: 'p4m1', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
       { id: 'p4m2', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
@@ -108,7 +159,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     name: 'Opponent 4',
     avatar: 'avatar1.png',
     lifeTotal: 20,
-    effects: [],
+    effects: [...SAMPLE_EFFECTS],
     cards: [
       { id: 'p5m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
       { id: 'p5m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
@@ -134,7 +185,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     name: 'Opponent 6',
     avatar: 'avatar1.png',
     lifeTotal: 20,
-    effects: [],
+    effects: [...SAMPLE_EFFECTS],
     cards: [
       { id: 'p7m1', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
       { id: 'p7m2', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
@@ -147,7 +198,7 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     name: 'Opponent 7',
     avatar: 'avatar1.png',
     lifeTotal: 20,
-    effects: [],
+    effects: [...SAMPLE_EFFECTS],
     cards: [
       { id: 'p8m1', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
       { id: 'p8m2', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
