@@ -1,63 +1,44 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Dimensions } from 'react-native';
+import { MagicCard } from 'types/Card';
 
-import { CardProps } from './Card';
+import { Card } from './Card';
 
 interface CardHandProps {
-  cards: CardProps[];
-  maxDisplayCards?: number;
-  color?: string;
+  cards: MagicCard[];
 }
 
-export const CardHand = ({
-  cards,
-  maxDisplayCards = 5,
-  color = '#6D28D9', // Default to purple
-}: CardHandProps) => {
-  // Filter for action cards
-  const actionCards = cards.filter((card) => card.type === 'action');
+export const CardHand = ({ cards }: CardHandProps) => {
+  if (!cards || cards.length === 0) return null;
 
-  // Limit the number of cards shown
-  const displayCount = Math.min(actionCards.length, maxDisplayCards);
-
-  // Generate an array of the number of cards to display
-  const displayCards = Array.from({ length: displayCount });
+  // 25% of the screen height
+  const handHeight = Dimensions.get('window').height * 0.25;
 
   return (
-    <View style={styles.container}>
-      {displayCards.map((_, index) => (
-        <View
-          key={index}
-          style={[
-            styles.card,
-            {
-              left: index * 15,
-              transform: [{ rotate: `${(index - Math.floor(displayCount / 2)) * 5}deg` }],
-              zIndex: index,
-              backgroundColor: color,
-            },
-          ]}
-        />
-      ))}
+    <View
+      className="absolute bottom-0 left-0 z-20 w-full rounded-t-2xl border-t border-gray-700 bg-gray-900/95 px-2 pb-4 pt-2 shadow-2xl"
+      style={{ height: handHeight }}>
+      <Text className="mb-2 text-center text-lg font-bold tracking-wide text-indigo-300 drop-shadow-md">
+        Your Hand
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ alignItems: 'center', paddingHorizontal: 12, height: '100%' }}>
+        {cards.map((card, idx) => (
+          <View
+            key={card.id}
+            className="mx-2"
+            style={{
+              shadowColor: '#000',
+              shadowOpacity: 0.15,
+              shadowRadius: 6,
+              shadowOffset: { width: 0, height: 2 },
+              elevation: 4,
+            }}>
+            <Card {...card} />
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'relative',
-    height: 40,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 5,
-  },
-  card: {
-    position: 'absolute',
-    width: 25,
-    height: 35,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#8B5CF6',
-  },
-});

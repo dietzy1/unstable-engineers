@@ -9,12 +9,13 @@ import {
   Image,
 } from 'react-native';
 
-import { BuffDebuff, EffectProps } from '../../components/BuffDebuff';
-import { Card, CardProps } from '../../components/Card';
+import { BuffDebuff, EffectProps } from '../../../components/BuffDebuff';
+import { Card } from '../../../components/Card';
+import { MagicCard } from 'types/Card';
 
 interface PlayerDetailScreenProps {
   playerName: string;
-  manaCards: CardProps[];
+  manaCards: MagicCard[];
   buffEffects: EffectProps[];
   debuffEffects: EffectProps[];
   onClose: () => void;

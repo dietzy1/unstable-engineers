@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Animated } from 'react-native';
 interface CardAddedNotificationProps {
   visible: boolean;
   cardName: string;
-  type: 'mana' | 'action';
+  type: 'mana' | 'action' | 'spell';
   onHide: () => void;
 }
 

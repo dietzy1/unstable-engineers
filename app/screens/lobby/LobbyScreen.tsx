@@ -97,7 +97,7 @@ export const LobbyScreen = ({
           name: 'Player 3',
           avatar: 'avatar4',
           isHost: false,
-          isReady: false,
+          isReady: true,
         },
       ];
 

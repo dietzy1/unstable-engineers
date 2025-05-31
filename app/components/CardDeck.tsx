@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-import { CardType, ManaColor } from './Card';
+import { CardType, ManaColor } from '../types/Card';
 
 interface CardDeckProps {
   type: CardType;
@@ -10,12 +10,7 @@ interface CardDeckProps {
   onPress?: () => void;
 }
 
-export const CardDeck = ({
-  type,
-  cardsRemaining,
-  manaColor = 'colorless',
-  onPress,
-}: CardDeckProps) => {
+export const CardDeck = ({ type, cardsRemaining, manaColor, onPress }: CardDeckProps) => {
   const isMana = type === 'mana';
 
   const getBgColor = () => {
@@ -26,11 +21,9 @@ export const CardDeck = ({
         return 'bg-red-700';
       case 'blue':
         return 'bg-blue-700';
-      case 'green':
-        return 'bg-green-700';
       case 'black':
         return 'bg-stone-900';
-      case 'white':
+      case 'green':
         return 'bg-amber-100';
       default:
         return 'bg-gray-600';
@@ -38,7 +31,6 @@ export const CardDeck = ({
   };
 
   const getTextColor = () => {
-    if (manaColor === 'white') return 'text-black';
     return 'text-white';
   };
 

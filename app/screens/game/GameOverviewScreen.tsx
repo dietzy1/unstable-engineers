@@ -10,18 +10,23 @@ import {
 } from 'react-native';
 
 import { EffectProps } from '../../components/BuffDebuff';
-import { Card, CardProps } from '../../components/Card';
+import { Card } from '../../components/Card';
 import { CardDeck } from '../../components/CardDeck';
 import { EffectsManager } from '../../components/EffectsManager';
 
+import { MagicCard } from 'types/Card';
+
 // Sample data for available cards to draw
-const AVAILABLE_DRAW_CARDS: CardProps[] = [
+const AVAILABLE_DRAW_CARDS: MagicCard[] = [
   {
     id: 'd1',
-    name: 'Lightning Bolt',
+    name: 'Fire Bolt',
     type: 'action',
     description: 'Deal 3 damage to any target',
     cost: 1,
+    image: '',
+    manaColor: 'red',
+    onPress: () => {},
   },
   {
     id: 'd2',
@@ -29,26 +34,46 @@ const AVAILABLE_DRAW_CARDS: CardProps[] = [
     type: 'action',
     description: 'Haste',
     cost: 1,
-    power: 2,
-    toughness: 2,
+    image: '',
+    manaColor: 'red',
+    onPress: () => {},
   },
-  { id: 'd3', name: 'Wrath of God', type: 'action', description: 'Destroy all creatures', cost: 4 },
+  {
+    id: 'd3',
+    name: 'Wrath of God',
+    type: 'action',
+    description: 'Destroy all creatures',
+    cost: 4,
+    image: '',
+    manaColor: 'black',
+    onPress: () => {},
+  },
   {
     id: 'd4',
     name: 'Llanowar Elves',
     type: 'action',
     description: 'Add one green mana',
     cost: 1,
-    power: 1,
-    toughness: 1,
+    image: '',
+    manaColor: 'green',
+    onPress: () => {},
   },
-  { id: 'd5', name: 'Ancestral Recall', type: 'action', description: 'Draw three cards', cost: 1 },
+  {
+    id: 'd5',
+    name: 'Ancestral Recall',
+    type: 'action',
+    description: 'Draw three cards',
+    cost: 1,
+    image: '',
+    manaColor: 'blue',
+    onPress: () => {},
+  },
 ];
 
 interface GameOverviewScreenProps {
   onNavigateToHand: () => void;
-  onDrawManaCard?: (card: CardProps) => void;
-  onDrawActionCard?: (card: CardProps) => void;
+  onDrawManaCard?: (card: MagicCard) => void;
+  onDrawActionCard?: (card: MagicCard) => void;
   onApplyEffect?: (effect: EffectProps, playerId: string) => void;
   playerIds: string[];
   playerNames: string[];
@@ -62,11 +87,11 @@ export const GameOverviewScreen = ({
   playerIds = [],
   playerNames = [],
 }: GameOverviewScreenProps) => {
-  const [selectedCard, setSelectedCard] = useState<CardProps | null>(null);
+  const [selectedCard, setSelectedCard] = useState<MagicCard | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showEffectsManager, setShowEffectsManager] = useState(false);
 
-  const handleCardPress = (card: CardProps) => {
+  const handleCardPress = (card: MagicCard) => {
     setSelectedCard(card);
     setShowModal(true);
   };
@@ -94,11 +119,15 @@ export const GameOverviewScreen = ({
       const randomColor = ['red', 'blue', 'green', 'black', 'white', 'colorless'][
         Math.floor(Math.random() * 6)
       ];
-      const newManaCard: CardProps = {
+      const newManaCard: MagicCard = {
         id: `mana-${Date.now()}`,
         name: `${randomColor.charAt(0).toUpperCase() + randomColor.slice(1)} Mana`,
         type: 'mana',
         manaColor: randomColor as any,
+        description: '',
+        cost: 0,
+        image: '',
+        onPress: () => {},
       };
       onDrawManaCard(newManaCard);
     }
@@ -212,11 +241,6 @@ export const GameOverviewScreen = ({
                     </Text>
                     {selectedCard.cost !== undefined && (
                       <Text className="text-blue-400">Mana Cost: {selectedCard.cost}</Text>
-                    )}
-                    {selectedCard.power !== undefined && selectedCard.toughness !== undefined && (
-                      <Text className="text-amber-400">
-                        Power/Toughness: {selectedCard.power}/{selectedCard.toughness}
-                      </Text>
                     )}
                   </>
                 )}

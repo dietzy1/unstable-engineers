@@ -1,30 +1,68 @@
-import { GameTable } from 'components/GameTable';
+import { GameTable } from 'screens/game/table/GameTable';
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-native';
 
 import { GameOverviewScreen } from './GameOverviewScreen';
-import { PlayerDetailScreen } from './PlayerDetailScreen';
+import { PlayerDetailScreen } from './detail/PlayerDetailScreen';
 import { EffectProps } from '../../components/BuffDebuff';
-import { CardProps, CardType } from '../../components/Card';
+
 import { CardAddedNotification } from '../../components/CardAddedNotification';
+import { CardType, MagicCard } from '../../types/Card';
 
 // Sample data for demonstration
-const SAMPLE_MANA_CARDS: CardProps[] = [
-  { id: 'm1', name: 'Mountain', type: 'mana', manaColor: 'red' },
-  { id: 'm2', name: 'Island', type: 'mana', manaColor: 'blue' },
-  { id: 'm3', name: 'Forest', type: 'mana', manaColor: 'green' },
-  { id: 'm4', name: 'Swamp', type: 'mana', manaColor: 'black' },
-  { id: 'm5', name: 'Plains', type: 'mana', manaColor: 'white' },
-  { id: 'm6', name: 'Wastes', type: 'mana', manaColor: 'colorless' },
+const SAMPLE_MANA_CARDS: MagicCard[] = [
+  {
+    id: 'm1',
+    name: 'Mountain',
+    type: 'mana',
+    manaColor: 'red',
+    description: 'Mountain',
+    cost: 0,
+    image: '',
+    onPress: () => {},
+  },
+  {
+    id: 'm2',
+    name: 'Island',
+    type: 'mana',
+    manaColor: 'blue',
+    description: 'Island',
+    cost: 0,
+    image: '',
+    onPress: () => {},
+  },
+  {
+    id: 'm3',
+    name: 'Forest',
+    type: 'mana',
+    manaColor: 'green',
+    description: 'Forest',
+    cost: 0,
+    image: '',
+    onPress: () => {},
+  },
+  {
+    id: 'm4',
+    name: 'Swamp',
+    type: 'mana',
+    manaColor: 'black',
+    description: 'Swamp',
+    cost: 0,
+    image: '',
+    onPress: () => {},
+  },
 ];
 
-const SAMPLE_ACTION_CARDS: CardProps[] = [
+const SAMPLE_ACTION_CARDS: MagicCard[] = [
   {
-    id: 'a1',
+    id: '1',
     name: 'Fire Bolt',
     type: 'action',
     description: 'Deal 3 damage to any target',
     cost: 2,
+    manaColor: 'red',
+    image: '',
+    onPress: () => {},
   },
   {
     id: 'a2',
@@ -32,6 +70,9 @@ const SAMPLE_ACTION_CARDS: CardProps[] = [
     type: 'action',
     description: 'Counter target spell',
     cost: 3,
+    manaColor: 'blue',
+    image: '',
+    onPress: () => {},
   },
   {
     id: 'a3',
@@ -39,6 +80,9 @@ const SAMPLE_ACTION_CARDS: CardProps[] = [
     type: 'action',
     description: 'Target creature gets +3/+3 until end of turn',
     cost: 1,
+    manaColor: 'green',
+    image: '',
+    onPress: () => {},
   },
 ];
 
@@ -99,7 +143,7 @@ export interface PlayerData {
   avatar: string;
   lifeTotal: number;
   effects: EffectProps[];
-  cards: CardProps[];
+  cards: MagicCard[];
   isCurrentPlayer: boolean;
 }
 
@@ -112,7 +156,6 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [...SAMPLE_EFFECTS],
     cards: [...SAMPLE_MANA_CARDS, ...SAMPLE_ACTION_CARDS],
-
     isCurrentPlayer: true,
   },
   {
@@ -122,8 +165,26 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [...SAMPLE_EFFECTS],
     cards: [
-      { id: 'p2m1', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
-      { id: 'p2m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
+      {
+        id: 'p2m1',
+        name: 'Island',
+        type: 'mana',
+        manaColor: 'blue',
+        description: 'Basic land - Island',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
+      {
+        id: 'p2m2',
+        name: 'Island',
+        type: 'mana',
+        manaColor: 'blue',
+        description: 'Basic land - Island',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
       ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
@@ -135,8 +196,26 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [...SAMPLE_EFFECTS],
     cards: [
-      { id: 'p3m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
-      { id: 'p3m2', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
+      {
+        id: 'p3m1',
+        name: 'Mountain',
+        type: 'mana',
+        manaColor: 'red',
+        description: 'Basic land - Mountain',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
+      {
+        id: 'p3m2',
+        name: 'Forest',
+        type: 'mana',
+        manaColor: 'green',
+        description: 'Basic land - Forest',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
       ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
@@ -148,8 +227,26 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [...SAMPLE_EFFECTS],
     cards: [
-      { id: 'p4m1', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
-      { id: 'p4m2', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
+      {
+        id: 'p4m1',
+        name: 'Swamp',
+        type: 'mana',
+        manaColor: 'black',
+        description: 'Basic land - Swamp',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
+      {
+        id: 'p4m2',
+        name: 'Plains',
+        type: 'mana',
+        manaColor: 'green',
+        description: 'Basic land - Plains',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
       ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
@@ -161,8 +258,26 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [...SAMPLE_EFFECTS],
     cards: [
-      { id: 'p5m1', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
-      { id: 'p5m2', name: 'Island', type: 'mana' as CardType, manaColor: 'blue' },
+      {
+        id: 'p5m1',
+        name: 'Mountain',
+        type: 'mana',
+        manaColor: 'red',
+        description: 'Basic land - Mountain',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
+      {
+        id: 'p5m2',
+        name: 'Island',
+        type: 'mana',
+        manaColor: 'blue',
+        description: 'Basic land - Island',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
       ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
@@ -174,8 +289,26 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [],
     cards: [
-      { id: 'p6m1', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
-      { id: 'p6m2', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
+      {
+        id: 'p6m1',
+        name: 'Swamp',
+        type: 'mana',
+        manaColor: 'black',
+        description: 'Basic land - Swamp',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
+      {
+        id: 'p6m2',
+        name: 'Plains',
+        type: 'mana',
+        manaColor: 'green',
+        description: 'Basic land - Plains',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
       ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
@@ -187,8 +320,26 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [...SAMPLE_EFFECTS],
     cards: [
-      { id: 'p7m1', name: 'Forest', type: 'mana' as CardType, manaColor: 'green' },
-      { id: 'p7m2', name: 'Mountain', type: 'mana' as CardType, manaColor: 'red' },
+      {
+        id: 'p7m1',
+        name: 'Forest',
+        type: 'mana',
+        manaColor: 'green',
+        description: 'Basic land - Forest',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
+      {
+        id: 'p7m2',
+        name: 'Mountain',
+        type: 'mana',
+        manaColor: 'red',
+        description: 'Basic land - Mountain',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
       ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
@@ -200,8 +351,26 @@ const SAMPLE_PLAYERS: PlayerData[] = [
     lifeTotal: 20,
     effects: [...SAMPLE_EFFECTS],
     cards: [
-      { id: 'p8m1', name: 'Plains', type: 'mana' as CardType, manaColor: 'white' },
-      { id: 'p8m2', name: 'Swamp', type: 'mana' as CardType, manaColor: 'black' },
+      {
+        id: 'p8m1',
+        name: 'Plains',
+        type: 'mana',
+        manaColor: 'green',
+        description: 'Basic land - Plains',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
+      {
+        id: 'p8m2',
+        name: 'Swamp',
+        type: 'mana',
+        manaColor: 'black',
+        description: 'Basic land - Swamp',
+        cost: 0,
+        image: '',
+        onPress: () => {},
+      },
       ...SAMPLE_ACTION_CARDS,
     ],
     isCurrentPlayer: false,
@@ -209,15 +378,16 @@ const SAMPLE_PLAYERS: PlayerData[] = [
 ];
 
 // Central game cards
-const GAME_CARDS: CardProps[] = [
+const GAME_CARDS: MagicCard[] = [
   {
     id: 'g1',
     name: 'Dragon',
     type: 'action',
     description: 'Flying',
     cost: 5,
-    power: 5,
-    toughness: 5,
+    manaColor: 'red',
+    image: '',
+    onPress: () => {},
   },
   {
     id: 'g2',
@@ -225,6 +395,9 @@ const GAME_CARDS: CardProps[] = [
     type: 'action',
     description: 'Gain 3 life or prevent 3 damage',
     cost: 1,
+    manaColor: 'black',
+    image: '',
+    onPress: () => {},
   },
 ];
 
@@ -255,7 +428,7 @@ export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenPr
     return SAMPLE_PLAYERS;
   });
 
-  const [gameCards, setGameCards] = useState<CardProps[]>(GAME_CARDS);
+  const [gameCards, setGameCards] = useState<MagicCard[]>(GAME_CARDS);
   const [currentView, setCurrentView] = useState<'main' | 'overview' | 'playerDetail'>('main');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
@@ -336,7 +509,7 @@ export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenPr
   };
 
   // Handler for drawing a card
-  const handleDrawCard = (card: CardProps) => {
+  const handleDrawCard = (card: MagicCard) => {
     // Add card to current player's hand
     setPlayers((prevPlayers) => {
       return prevPlayers.map((player) => {
