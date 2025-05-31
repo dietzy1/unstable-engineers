@@ -6,6 +6,7 @@ import { Header } from '../../../components/Header';
 import { PlayerInformation } from '../../../components/PlayerInformation';
 import { CardHand } from '../../../components/CardHand';
 import { MagicCard } from 'types/Card';
+import { PlayerStatsBar } from '../../../components/PlayerStatsBar';
 
 interface GameTableProps {
   playerData: PlayerData[];
@@ -98,9 +99,7 @@ export const GameTable = ({
       </View>
 
       {/* Main Game Area */}
-      <View
-        className="relative flex-1 flex-row items-center justify-center"
-        style={{ marginBottom: handHeight }}>
+      <View className=" flex-1 flex-row items-center justify-center">
         {/* Left opponents (if any) */}
         {leftOpponents.length > 0 && (
           <View className="absolute bottom-0 left-0 top-0 z-10 justify-center">
@@ -129,7 +128,7 @@ export const GameTable = ({
               <Text className="text-xs text-gray-400">Tap to view game table</Text>
               {gameCards.length > 0 && (
                 <View className="mt-2 h-20 w-14 items-center justify-center">
-                  {Array.from({ length: Math.min(3, gameCards.length) }).map((_, index) => (
+                  {Array.from({ length: Math.min(7, gameCards.length) }).map((_, index) => (
                     <View
                       key={index}
                       style={{
@@ -168,7 +167,12 @@ export const GameTable = ({
       </View>
 
       {/* Player Hand at the bottom */}
-      {currentPlayer && <CardHand cards={currentPlayer.cards} />}
+      {currentPlayer && (
+        <>
+          <CardHand cards={currentPlayer.cards} />
+          <PlayerStatsBar player={currentPlayer} />
+        </>
+      )}
     </SafeAreaView>
   );
 };

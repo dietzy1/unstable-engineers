@@ -11,15 +11,12 @@ export const CardHand = ({ cards }: CardHandProps) => {
   if (!cards || cards.length === 0) return null;
 
   // 25% of the screen height
-  const handHeight = Dimensions.get('window').height * 0.25;
+  const handHeight = Dimensions.get('window').height * 0.2;
 
   return (
     <View
-      className="absolute bottom-0 left-0 z-20 w-full rounded-t-2xl border-t border-gray-700 bg-gray-900/95 px-2 pb-4 pt-2 shadow-2xl"
+      className="w-full rounded-t-2xl border-t border-gray-700  px-2  pt-2 shadow-2xl"
       style={{ height: handHeight }}>
-      <Text className="mb-2 text-center text-lg font-bold tracking-wide text-indigo-300 drop-shadow-md">
-        Your Hand
-      </Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
