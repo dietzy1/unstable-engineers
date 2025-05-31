@@ -99,7 +99,7 @@ export const GameTable = ({
       </View>
 
       {/* Main Game Area */}
-      <View className=" flex-1 flex-row items-center justify-center">
+      <View className=" flex-1 flex-row items-center justify-center ">
         {/* Left opponents (if any) */}
         {leftOpponents.length > 0 && (
           <View className="absolute bottom-0 left-0 top-0 z-10 justify-center">
@@ -116,7 +116,7 @@ export const GameTable = ({
           </View>
         )}
         {/* Center game area and current player */}
-        <View className="flex-1 items-center justify-center">
+        <View className="flex-1 items-center">
           {/* Central Game Area */}
           <TouchableOpacity
             className="mb-4 h-48 w-48 items-center justify-center rounded-full border-4 border-gray-700 bg-gray-800"
