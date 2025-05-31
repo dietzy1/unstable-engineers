@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { PlayerData } from 'screens/game/GameScreen';
 import { ManaColor } from 'types/Card';
@@ -40,7 +40,6 @@ const MANA_CONFIG: Record<ManaColor, { label: string; bg: string; icon: string; 
 };
 
 export const PlayerStatsBar = ({ player }: PlayerStatsBarProps) => {
-  // Health calculations
   const maxHealth = 20;
   const healthPercent = Math.max(0, Math.min(1, player.lifeTotal / maxHealth));
 
@@ -50,20 +49,11 @@ export const PlayerStatsBar = ({ player }: PlayerStatsBarProps) => {
     return '#EF4444'; // Red
   };
 
-  const getHealthGlow = () => {
-    if (healthPercent > 0.6) return 'shadow-emerald-500/60';
-    if (healthPercent > 0.3) return 'shadow-amber-500/60';
-    return 'shadow-red-500/60';
-  };
-
   const healthColor = getHealthColor();
-  const healthGlow = getHealthGlow();
 
-  // Effects calculations
   const buffCount = player.effects.filter((e) => e.type === 'buff').length;
   const debuffCount = player.effects.filter((e) => e.type === 'debuff').length;
 
-  // Mana calculations
   const manaCounts: Record<ManaColor, number> = { red: 0, blue: 0, green: 0, black: 0 };
   player.cards.forEach((card) => {
     if (card.type === 'mana') {
@@ -71,58 +61,53 @@ export const PlayerStatsBar = ({ player }: PlayerStatsBarProps) => {
     }
   });
 
-  // Health circle configuration
-  const radius = 22;
-  const strokeWidth = 3;
+  const radius = 32;
+  const strokeWidth = 5;
   const strokeDasharray = 2 * Math.PI * radius;
   const strokeDashoffset = strokeDasharray * (1 - healthPercent);
 
   return (
-    <View className=" w-full items-center">
-      <View className="rounded-lg  border border-slate-700/50  px-4 py-2 shadow-xl backdrop-blur-sm">
-        <View className="flex-row items-center justify-center">
+    <View className="absolute bottom-0 w-full items-center pb-4">
+      <View className="w-full  rounded-t-2xl   bg-gray-900/80 px-4 pb-2 pt-4 shadow-2xl backdrop-blur-lg">
+        <View className="flex-row items-center justify-between">
           {/* Left Side - Effects */}
-          <View className="mr-4 flex-row items-center">
-            <View className="mr-1 rounded bg-emerald-600/90 px-2 py-1 shadow-sm shadow-emerald-500/30">
-              <View className="flex-row items-center">
-                <Ionicons name="trending-up" size={12} color="#ffffff" />
-                <Text className="ml-1 text-xs font-bold text-white">{buffCount}</Text>
+          <View className="flex-1 items-center">
+            <Text className="mb-2 text-xs font-bold uppercase text-slate-400">Effects</Text>
+            <View className="flex-row">
+              <View className="mr-2 items-center rounded-lg bg-emerald-900/80 px-3 py-1">
+                <Ionicons name="trending-up" size={18} color="#10B981" />
+                <Text className="text-sm font-bold text-white">{buffCount}</Text>
               </View>
-            </View>
-            <View className="rounded bg-red-600/90 px-2 py-1 shadow-sm shadow-red-500/30">
-              <View className="flex-row items-center">
-                <Ionicons name="trending-down" size={12} color="#ffffff" />
-                <Text className="ml-1 text-xs font-bold text-white">{debuffCount}</Text>
+              <View className="items-center rounded-lg bg-red-900/80 px-3 py-1">
+                <Ionicons name="trending-down" size={18} color="#EF4444" />
+                <Text className="text-sm font-bold text-white">{debuffCount}</Text>
               </View>
             </View>
           </View>
 
           {/* Center - Avatar with Health Circle */}
           <View className="mx-4 items-center">
-            <View className="relative items-center justify-center">
-              {/* Health Circle Background */}
+            <View className="relative h-20 w-20 items-center justify-center">
               <View className="absolute">
-                <Svg width={50} height={50}>
+                <Svg width={80} height={80}>
                   <Defs>
                     <LinearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                       <Stop offset="0%" stopColor={healthColor} stopOpacity="1" />
                       <Stop offset="100%" stopColor={healthColor} stopOpacity="0.7" />
                     </LinearGradient>
                   </Defs>
-                  {/* Background circle */}
                   <Circle
-                    cx={25}
-                    cy={25}
+                    cx={40}
+                    cy={40}
                     r={radius}
                     stroke="#374151"
                     strokeWidth={strokeWidth}
                     fill="none"
                     opacity={0.4}
                   />
-                  {/* Health progress circle */}
                   <Circle
-                    cx={25}
-                    cy={25}
+                    cx={40}
+                    cy={40}
                     r={radius}
                     stroke="url(#healthGradient)"
                     strokeWidth={strokeWidth}
@@ -130,59 +115,38 @@ export const PlayerStatsBar = ({ player }: PlayerStatsBarProps) => {
                     strokeDasharray={strokeDasharray}
                     strokeDashoffset={strokeDashoffset}
                     strokeLinecap="round"
-                    transform="rotate(-90 25 25)"
+                    transform="rotate(-90 40 40)"
                   />
                 </Svg>
               </View>
-
-              {/* Avatar centered in the circle */}
-              <View className="items-center justify-center" style={{ width: 50, height: 50 }}>
-                {player.avatar ? (
-                  <Image
-                    source={AVATARS.find((a) => a.id === player.avatar.replace('.png', ''))?.source}
-                    className="rounded-full"
-                    style={{ width: 36, height: 36 }}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View
-                    className="items-center justify-center rounded-full bg-gray-700"
-                    style={{ width: 36, height: 36 }}>
-                    <MaterialCommunityIcons name="account" size={24} color="#FFF" />
-                  </View>
-                )}
-              </View>
+              <Image
+                source={AVATARS.find((a) => a.id === player.avatar.replace('.png', ''))?.source}
+                className="h-14 w-14 rounded-full"
+                resizeMode="cover"
+              />
             </View>
-
-            {/* Health Points below avatar */}
-            <Text className="mt-1 text-sm font-bold" style={{ color: healthColor }}>
+            <Text className="mt-1 text-lg font-bold" style={{ color: healthColor }}>
               {player.lifeTotal} HP
             </Text>
           </View>
 
           {/* Right Side - Mana Resources */}
-          <View className="ml-4 flex-row items-center">
-            {MANA_COLORS.map((color, index) => {
-              const config = MANA_CONFIG[color];
-              const count = manaCounts[color];
-              const hasResource = count > 0;
-
-              return (
-                <View
-                  key={color}
-                  className={`
-                    rounded border px-2 py-1
-                    ${config.bg} 
-                    ${hasResource ? `shadow-sm ${config.glow} border-white/20` : 'border-slate-600/30 opacity-60'}
-                    ${index < MANA_COLORS.length - 1 ? 'mr-1' : ''}
-                  `}>
-                  <View className="items-center">
-                    <Text className="text-xs">{config.icon}</Text>
-                    <Text className="text-xs font-bold text-white">{count}</Text>
+          <View className="flex-1 items-center">
+            <Text className="mb-2 text-xs font-bold uppercase text-slate-400">Mana</Text>
+            <View className="flex-row">
+              {MANA_COLORS.map((color, index) => {
+                const config = MANA_CONFIG[color];
+                const count = manaCounts[color];
+                return (
+                  <View
+                    key={color}
+                    className={`items-center px-1 ${index < MANA_COLORS.length - 1 ? 'mr-1' : ''}`}>
+                    <Text className="text-lg">{config.icon}</Text>
+                    <Text className="text-sm font-bold text-white">{count}</Text>
                   </View>
-                </View>
-              );
-            })}
+                );
+              })}
+            </View>
           </View>
         </View>
       </View>
