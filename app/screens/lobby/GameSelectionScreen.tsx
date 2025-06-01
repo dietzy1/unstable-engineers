@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Header } from 'components/Header';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,52 +14,16 @@ import {
   Image,
 } from 'react-native';
 import { v4 as uuidv4 } from 'uuid';
+
 import 'react-native-get-random-values';
+import { GameListItem } from './GameListItem';
+import { LobbyState, PlayerInfo } from '../../services/payload';
+import { wsService } from '../../services/websocket';
 
 // Storage keys
 const USER_PROFILE_KEY = 'user_profile';
 const USER_ID_KEY = 'user_id';
 
-// Mock data for available games
-export const MOCK_GAMES = [
-  {
-    id: 'game1',
-    name: 'Dragon Battle',
-    host: 'Player1',
-    players: 1,
-    maxPlayers: 4,
-  },
-  {
-    id: 'game2',
-    name: 'Magic Duel',
-    host: 'Wizard99',
-    players: 2,
-    maxPlayers: 2,
-  },
-  {
-    id: 'game3',
-    name: 'Tournament Room',
-    host: 'GrandMaster',
-    players: 3,
-    maxPlayers: 8,
-  },
-  {
-    id: 'game4',
-    name: 'Casual Game',
-    host: 'Newbie',
-    players: 1,
-    maxPlayers: 4,
-  },
-  {
-    id: 'game5',
-    name: 'Pro Match',
-    host: 'Champion',
-    players: 1,
-    maxPlayers: 2,
-  },
-];
-
-// Mock avatars
 export const AVATARS = [
   { id: 'avatar1', source: require('../../assets/avatars/avatar1.png') },
   { id: 'avatar2', source: require('../../assets/avatars/avatar2.png') },
@@ -67,70 +31,6 @@ export const AVATARS = [
   { id: 'avatar4', source: require('../../assets/avatars/avatar4.png') },
   { id: 'avatar5', source: require('../../assets/avatars/avatar5.png') },
 ];
-
-interface GameItemProps {
-  id: string;
-  name: string;
-  host: string;
-  players: number;
-  maxPlayers: number;
-  onJoin: (gameId: string) => void;
-}
-
-// Component for individual game items in the list
-const GameItem = ({ id, name, host, players, maxPlayers, onJoin }: GameItemProps) => {
-  const isGameFull = players >= maxPlayers;
-
-  return (
-    <TouchableOpacity
-      className="my-2 rounded-xl border border-gray-700 p-4"
-      onPress={() => onJoin(id)}
-      activeOpacity={0.8}
-      disabled={isGameFull}>
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center">
-          <View
-            className={`mr-2 h-12 w-2 rounded-full ${isGameFull ? 'bg-red-500' : 'bg-green-500'}`}
-          />
-          <View>
-            <Text className="text-lg font-bold text-white">{name}</Text>
-            <View className="mt-1 flex-row items-center">
-              <Text className="text-sm text-gray-300">Hosted by: </Text>
-              <Text className="text-sm font-medium text-amber-400">{host}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="items-end">
-          <View className="flex-row items-center">
-            <Text className="mr-1 text-sm text-white">
-              {players}/{maxPlayers}
-            </Text>
-            <View className="flex-row">
-              {Array(maxPlayers)
-                .fill(0)
-                .map((_, idx) => (
-                  <View
-                    key={idx}
-                    className={`mx-0.5 h-3 w-3 rounded-full ${idx < players ? 'bg-blue-500' : 'bg-gray-600'}`}
-                  />
-                ))}
-            </View>
-          </View>
-        </View>
-      </View>
-
-      <View className="mt-3 flex-row justify-end">
-        <TouchableOpacity
-          className={`rounded-lg px-5 py-2 ${isGameFull ? 'bg-gray-600' : 'bg-indigo-600'}`}
-          onPress={() => !isGameFull && onJoin(id)}
-          disabled={isGameFull}>
-          <Text className="font-bold text-white">{isGameFull ? 'FULL' : 'JOIN'}</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 interface GameSelectionScreenProps {
   onJoinGame: (gameId: string) => void;
@@ -148,21 +48,102 @@ export const GameSelectionScreen = ({
   const [refreshing, setRefreshing] = useState(false);
   const [newGameName, setNewGameName] = useState('');
   const [maxPlayers, setMaxPlayers] = useState('4');
+  const [availableLobbies, setAvailableLobbies] = useState<LobbyState[]>([]);
 
   // User profile state
   const [userId, setUserId] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [selectedAvatar, setSelectedAvatar] = useState<string>('avatar1');
 
-  // Load user profile on mount
+  // Load user profile and connect to WebSocket
   useEffect(() => {
     loadUserProfile();
   }, []);
 
-  // Load user profile from AsyncStorage
+  // Set up WebSocket message handlers
+  useEffect(() => {
+    const handleLobbyCreated = (payload: LobbyState) => {
+      setAvailableLobbies((prev) => [...prev, payload]);
+    };
+
+    const handleLobbyState = (payload: LobbyState) => {
+      setAvailableLobbies((prev) =>
+        prev.map((lobby) => (lobby.lobbyId === payload.lobbyId ? payload : lobby))
+      );
+    };
+
+    const handlePlayerJoined = (payload: { lobbyId: string; player: PlayerInfo }) => {
+      setAvailableLobbies((prev) =>
+        prev.map((lobby) =>
+          lobby.lobbyId === payload.lobbyId
+            ? {
+                ...lobby,
+                players: [...lobby.players, payload.player],
+              }
+            : lobby
+        )
+      );
+    };
+
+    const handlePlayerLeft = (payload: { lobbyId: string; userId: string }) => {
+      setAvailableLobbies((prev) =>
+        prev.map((lobby) =>
+          lobby.lobbyId === payload.lobbyId
+            ? {
+                ...lobby,
+                players: lobby.players.filter((p: PlayerInfo) => p.id !== payload.userId),
+              }
+            : lobby
+        )
+      );
+    };
+
+    const handleHostChanged = (payload: { lobbyId: string; newHostId: string }) => {
+      setAvailableLobbies((prev) =>
+        prev.map((lobby) =>
+          lobby.lobbyId === payload.lobbyId
+            ? {
+                ...lobby,
+                hostId: payload.newHostId,
+                players: lobby.players.map((p: PlayerInfo) => ({
+                  ...p,
+                  isHost: p.id === payload.newHostId,
+                })),
+              }
+            : lobby
+        )
+      );
+    };
+
+    const handleLobbyClosed = (payload: { lobbyId: string }) => {
+      setAvailableLobbies((prev) => prev.filter((lobby) => lobby.lobbyId !== payload.lobbyId));
+    };
+
+    const handleError = (payload: { message: string }) => {
+      Alert.alert('Error', payload.message);
+    };
+
+    wsService.on('lobby_created', handleLobbyCreated);
+    wsService.on('lobby_state', handleLobbyState);
+    wsService.on('player_joined', handlePlayerJoined);
+    wsService.on('player_left', handlePlayerLeft);
+    wsService.on('host_changed', handleHostChanged);
+    wsService.on('lobby_closed', handleLobbyClosed);
+    wsService.on('error', handleError);
+
+    return () => {
+      wsService.off('lobby_created', handleLobbyCreated);
+      wsService.off('lobby_state', handleLobbyState);
+      wsService.off('player_joined', handlePlayerJoined);
+      wsService.off('player_left', handlePlayerLeft);
+      wsService.off('host_changed', handleHostChanged);
+      wsService.off('lobby_closed', handleLobbyClosed);
+      wsService.off('error', handleError);
+    };
+  }, []);
+
   const loadUserProfile = async () => {
     try {
-      // Load or generate user ID
       let id = await AsyncStorage.getItem(USER_ID_KEY);
       if (!id) {
         id = uuidv4();
@@ -170,14 +151,12 @@ export const GameSelectionScreen = ({
       }
       setUserId(id);
 
-      // Load profile if exists
       const profileJson = await AsyncStorage.getItem(USER_PROFILE_KEY);
       if (profileJson) {
         const profile = JSON.parse(profileJson);
         setUsername(profile.username || '');
         setSelectedAvatar(profile.avatar || 'avatar1');
-      } else if (!username) {
-        // Show profile modal if no profile exists
+      } else {
         setProfileModalVisible(true);
       }
     } catch (error) {
@@ -198,18 +177,23 @@ export const GameSelectionScreen = ({
         onProfileUpdate(profile);
       }
       setProfileModalVisible(false);
+
+      // Reconnect WebSocket with new profile
+      wsService.connect(userId, username, selectedAvatar);
     } catch (error) {
       console.error('Error saving profile:', error);
       Alert.alert('Error', 'Failed to save profile');
     }
   };
 
-  // Simulated refresh function
+  // Refresh available lobbies
   const onRefresh = () => {
     setRefreshing(true);
+    // Request updated lobby list from server
+    wsService.sendMessage('list_lobbies', {});
     setTimeout(() => {
       setRefreshing(false);
-    }, 1500);
+    }, 1000);
   };
 
   const handleCreateGame = () => {
@@ -219,15 +203,16 @@ export const GameSelectionScreen = ({
     }
 
     const maxPlayersNum = parseInt(maxPlayers, 10);
-    if (isNaN(maxPlayersNum) || maxPlayersNum < 2 || maxPlayersNum > 8) {
-      Alert.alert('Error', 'Players must be between 2 and 8');
+    if (isNaN(maxPlayersNum) || maxPlayersNum < 2 || maxPlayersNum > 6) {
+      Alert.alert('Error', 'Players must be between 2 and 6');
       return;
     }
 
+    wsService.createLobby(newGameName, maxPlayersNum);
     onCreateGame(newGameName, maxPlayersNum);
     setCreateModalVisible(false);
-    setNewGameName('');
-    setMaxPlayers('4');
+    setNewGameName(newGameName);
+    setMaxPlayers(maxPlayersNum.toString());
   };
 
   return (
@@ -247,7 +232,7 @@ export const GameSelectionScreen = ({
           <View className="flex-row items-center">
             <Text className="text-xl font-bold text-white">Available Games</Text>
             <View className="ml-2 h-6 w-6 items-center justify-center rounded-full bg-indigo-700">
-              <Text className="text-xs font-bold text-white">{MOCK_GAMES.length}</Text>
+              <Text className="text-xs font-bold text-white">{availableLobbies.length}</Text>
             </View>
           </View>
 
@@ -263,19 +248,16 @@ export const GameSelectionScreen = ({
           </View>
         ) : (
           <FlatList
-            data={MOCK_GAMES}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <GameItem
-                id={item.id}
-                name={item.name}
-                host={item.host}
-                players={item.players}
-                maxPlayers={item.maxPlayers}
-                onJoin={onJoinGame}
-              />
-            )}
+            data={availableLobbies}
+            keyExtractor={(item) => item.lobbyId}
+            renderItem={({ item }) => <GameListItem lobby={item} onJoin={onJoinGame} />}
             showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View className="flex-1 items-center justify-center py-8">
+                <Text className="text-gray-400">No games available</Text>
+                <Text className="mt-2 text-gray-500">Create a new game to get started!</Text>
+              </View>
+            }
           />
         )}
 
@@ -286,7 +268,11 @@ export const GameSelectionScreen = ({
           {selectedAvatar ? (
             <Image
               source={AVATARS.find((a) => a.id === selectedAvatar)?.source}
-              className="h-12 w-12 rounded-full"
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 28,
+              }}
             />
           ) : (
             <View className="h-12 w-12 items-center justify-center rounded-full bg-gray-700">
@@ -327,7 +313,7 @@ export const GameSelectionScreen = ({
                 onChangeText={setNewGameName}
               />
 
-              <Text className="mb-1 text-sm font-medium text-gray-300">Max Players (2-8)</Text>
+              <Text className="mb-1 text-sm font-medium text-gray-300">Max Players (2-6)</Text>
               <TextInput
                 className="mb-4 rounded-lg bg-gray-700 p-3 text-white"
                 placeholder="4"
@@ -345,7 +331,7 @@ export const GameSelectionScreen = ({
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className="rounded-lg bg-emerald-600   px-6 py-3"
+                  className="rounded-lg bg-emerald-600 px-6 py-3"
                   onPress={handleCreateGame}>
                   <Text className="font-bold text-white">CREATE</Text>
                 </TouchableOpacity>
@@ -361,8 +347,8 @@ export const GameSelectionScreen = ({
         transparent
         animationType="slide"
         onRequestClose={() => setProfileModalVisible(false)}>
-        <View className="flex-1 items-center justify-center bg-black/80">
-          <View className="w-5/6 overflow-hidden rounded-xl bg-gray-800">
+        <View className="flex-1 items-center justify-center bg-black/80 ">
+          <View className="w-full max-w-md overflow-hidden rounded-xl bg-gray-800">
             <Text className="pt-6 text-center text-xl font-bold text-white">Your Profile</Text>
 
             <View className="p-6">
@@ -384,7 +370,14 @@ export const GameSelectionScreen = ({
                       selectedAvatar === avatar.id ? 'border-indigo-500' : 'border-transparent'
                     }`}
                     onPress={() => setSelectedAvatar(avatar.id)}>
-                    <Image source={avatar.source} className="h-14 w-14 rounded-full" />
+                    <Image
+                      source={avatar.source}
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 28,
+                      }}
+                    />
                   </TouchableOpacity>
                 ))}
               </View>

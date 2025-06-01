@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { PlayerData } from 'screens/game/GameScreen';
 import { MagicCard } from 'types/Card';
 
 import { CardHand } from './CardHand';
+import { useDrag } from './DragContext';
+import GameBoard from './GameBoard';
+import GameControls from './GameControls';
 import { PlayerInformation } from './PlayerInformation';
 import { PlayerStatsBar } from './PlayerStatsBar';
 import { Header } from '../../../components/Header';
-import GameControls from './GameControls';
-import { useDrag } from './DragContext';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import GameBoard from './GameBoard';
 
 interface GameTableProps {
   playerData: PlayerData[];

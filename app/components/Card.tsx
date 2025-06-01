@@ -7,9 +7,10 @@ import Animated, {
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
-import { MagicCard } from 'types/Card';
-import { CardInteractions } from './CardInteractions';
 import { useDrag } from 'screens/game/overview/DragContext';
+import { MagicCard } from 'types/Card';
+
+import { CardInteractions } from './CardInteractions';
 
 export const Card = ({
   card,

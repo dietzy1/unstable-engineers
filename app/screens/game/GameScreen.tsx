@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-native';
 import { GameTable } from 'screens/game/overview/GameTable';
-import { DragProvider } from './overview/DragContext';
 
 import { PlayerDetailScreen } from './detail/PlayerDetailScreen';
+import { DragProvider } from './overview/DragContext';
 import { GameOverviewScreen } from './overview/GameOverviewScreen';
 import { EffectProps } from '../../components/BuffDebuff';
 import { CardAddedNotification } from '../../components/CardAddedNotification';

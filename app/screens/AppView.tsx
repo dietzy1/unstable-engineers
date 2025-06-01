@@ -1,22 +1,17 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState, useEffect } from 'react';
+import { CreateLobbyResponse } from 'services/payload';
+import { v4 as uuidv4 } from 'uuid';
 
 import { LoadingScreen } from './LoadingScreen';
 import { GameScreen } from './game/GameScreen';
-import { GameSelectionScreen, MOCK_GAMES } from './lobby/GameSelectionScreen';
+import { GameSelectionScreen } from './lobby/GameSelectionScreen';
 import { LobbyScreen } from './lobby/LobbyScreen';
+import { wsService } from '../services/websocket';
 
 // Storage keys
 const USER_PROFILE_KEY = 'user_profile';
-
-// Define game type to match MOCK_GAMES
-interface Game {
-  id: string;
-  name: string;
-  host: string;
-  players: number;
-  maxPlayers: number;
-}
+const USER_ID_KEY = 'user_id';
 
 export const AppView = () => {
   // Track connection state and active game
@@ -30,40 +25,68 @@ export const AppView = () => {
   const [userProfile, setUserProfile] = useState<{ username: string; avatar: string } | null>(null);
   const [userId, setUserId] = useState<string>('');
 
-  // Simulate checking if user is already connected to a game
+  // WebSocket message handlers
+  const handleLobbyCreated = (payload: CreateLobbyResponse) => {
+    setActiveGameId(payload.lobbyId);
+    setGameName(payload.gameName);
+    setMaxPlayers(payload.maxPlayers);
+    setIsHost(true);
+    setInLobby(true);
+  };
+
+  const handleGameStarting = (payload: any) => {
+    setInLobby(false);
+    setIsConnected(true);
+  };
+
+  const handleError = (payload: { message: string }) => {
+    console.error('WebSocket error:', payload.message);
+  };
+
+  // Initialize WebSocket connection and game state
   useEffect(() => {
     const initialize = async () => {
       try {
-        // In a real app, this would check with a server if the user
-        // is already in a game session
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        // Load user profile if exists
         const profileJson = await AsyncStorage.getItem(USER_PROFILE_KEY);
+        const storedUserId = await AsyncStorage.getItem(USER_ID_KEY);
+        const currentUserId = storedUserId || uuidv4();
+        let currentUsername = 'Player';
+        let currentAvatar = 'avatar1';
+
         if (profileJson) {
-          setUserProfile(JSON.parse(profileJson));
+          const profile = JSON.parse(profileJson);
+          setUserProfile(profile);
+          currentUsername = profile.username;
+          currentAvatar = profile.avatar;
         }
 
-        // Get user ID from AsyncStorage
-        const storedUserId = await AsyncStorage.getItem('user_id');
-        if (storedUserId) {
-          setUserId(storedUserId);
+        if (currentUserId) {
+          setUserId(currentUserId);
         }
 
-        // For demo purposes, default to not connected
-        setIsConnected(false);
-        setInLobby(false);
-        setActiveGameId(null);
+        // Connect to WebSocket with user info
+        wsService.connect(currentUserId, currentUsername, currentAvatar);
+
+        wsService.on('lobby_created', handleLobbyCreated);
+        wsService.on('game_starting', handleGameStarting);
+        wsService.on('error', handleError);
       } catch (error) {
-        console.error('Error checking connection:', error);
-        setIsConnected(false);
-        setInLobby(false);
+        console.error('Initialization error:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     initialize();
+
+    // This cleanup function will run when AppView unmounts
+    return () => {
+      console.log('Unsubscribing from AppView WebSocket events and disconnecting.');
+      wsService.off('lobby_created', handleLobbyCreated);
+      wsService.off('game_starting', handleGameStarting);
+      wsService.off('error', handleError);
+      wsService.disconnect();
+    };
   }, []);
 
   // Handler for joining an existing game
@@ -71,24 +94,11 @@ export const AppView = () => {
     console.log(`Joining game: ${gameId}`);
     setIsLoading(true);
 
-    // Simulate API call to join game
-    setTimeout(() => {
-      setActiveGameId(gameId);
-
-      // Find the game in the mock data to get its name
-      const foundGame = MOCK_GAMES.find((game: Game) => game.id === gameId);
-      if (foundGame) {
-        setGameName(foundGame.name);
-        setMaxPlayers(foundGame.maxPlayers);
-      } else {
-        setGameName('Unknown Game');
-        setMaxPlayers(4);
-      }
-
-      setIsHost(false);
-      setInLobby(true);
-      setIsLoading(false);
-    }, 1000);
+    wsService.joinLobby(gameId);
+    setActiveGameId(gameId);
+    setIsHost(false);
+    setInLobby(true);
+    setIsLoading(false);
   };
 
   // Handler for creating a new game
@@ -96,18 +106,12 @@ export const AppView = () => {
     console.log(`Creating game: ${gameName} with ${maxPlayers} players`);
     setIsLoading(true);
 
-    // Simulate API call to create game
-    setTimeout(() => {
-      // In a real app, we would send this to a server to create the game
-      // and get back a game ID
-      const mockGameId = `game-${Date.now()}`;
-      setActiveGameId(mockGameId);
-      setGameName(gameName);
-      setMaxPlayers(maxPlayers);
-      setIsHost(true);
-      setInLobby(true);
-      setIsLoading(false);
-    }, 1000);
+    wsService.createLobby(gameName, maxPlayers);
+    setGameName(gameName);
+    setMaxPlayers(maxPlayers);
+    setIsHost(true);
+    setInLobby(true);
+    setIsLoading(false);
   };
 
   // Handler for profile updates
@@ -119,13 +123,14 @@ export const AppView = () => {
   const handleLeaveLobbyOrGame = () => {
     setIsLoading(true);
 
-    // Simulate API call to leave game
-    setTimeout(() => {
-      setIsConnected(false);
-      setInLobby(false);
-      setActiveGameId(null);
-      setIsLoading(false);
-    }, 800);
+    if (inLobby) {
+      wsService.leaveLobby();
+    }
+
+    setIsConnected(false);
+    setInLobby(false);
+    setActiveGameId(null);
+    setIsLoading(false);
   };
 
   // Handler for starting the game from the lobby
@@ -133,12 +138,10 @@ export const AppView = () => {
     console.log(`Starting game: ${activeGameId}`);
     setIsLoading(true);
 
-    // Simulate API call to start the game
-    setTimeout(() => {
-      setInLobby(false);
-      setIsConnected(true);
-      setIsLoading(false);
-    }, 800);
+    wsService.startGame();
+    setInLobby(false);
+    setIsConnected(true);
+    setIsLoading(false);
   };
 
   // Show loading screen while checking connection
@@ -163,8 +166,6 @@ export const AppView = () => {
         maxPlayers={maxPlayers}
         isHost={isHost}
         currentUserId={userId}
-        currentUserName={userProfile?.username || 'Player'}
-        currentUserAvatar={userProfile?.avatar || 'avatar1'}
         onStartGame={handleStartGame}
         onLeaveLobby={handleLeaveLobbyOrGame}
       />

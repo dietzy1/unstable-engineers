@@ -1,8 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import { View, ScrollView, Dimensions } from 'react-native';
 import { MagicCard } from 'types/Card';
-import { Card } from '../../../components/Card';
+
 import { useDrag } from './DragContext';
+import { Card } from '../../../components/Card';
 
 interface CardHandProps {
   cards: MagicCard[];

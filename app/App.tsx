@@ -1,6 +1,5 @@
 import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppView } from 'screens/AppView';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
@@ -37,10 +36,8 @@ export default function App() {
 
   return (
     <GestureHandlerRootView>
-      <SafeAreaProvider>
-        <AppView />
-        <StatusBar style="light" />
-      </SafeAreaProvider>
+      <AppView />
+      <StatusBar style="light" />
     </GestureHandlerRootView>
   );
 }
