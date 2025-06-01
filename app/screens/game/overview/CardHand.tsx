@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { View, ScrollView, Dimensions } from 'react-native';
 import { MagicCard } from 'types/Card';
 import { Card } from '../../../components/Card';
+import { useDrag } from './DragContext';
 
 interface CardHandProps {
   cards: MagicCard[];
@@ -10,6 +11,7 @@ interface CardHandProps {
 
 export const CardHand = ({ cards, onPlayCard }: CardHandProps) => {
   const scrollViewRef = useRef<ScrollView>(null);
+  const { draggingCardId } = useDrag();
 
   const cardWidth = 100;
   const cardHeight = 140;
@@ -34,7 +36,7 @@ export const CardHand = ({ cards, onPlayCard }: CardHandProps) => {
 
   return (
     <View
-      className="absolute bottom-0 z-10 w-full"
+      className="absolute bottom-0 z-20 w-full"
       style={{
         height: 600,
         paddingBottom: 80,
@@ -64,6 +66,7 @@ export const CardHand = ({ cards, onPlayCard }: CardHandProps) => {
                 height: cardHeight,
                 marginRight: cardOverlap,
                 transform: [{ rotateZ: `${rotation}deg` }, { translateY }],
+                zIndex: draggingCardId === card.id ? 100 : 1,
               }}>
               <Card card={card} onPlayCard={onPlayCard} />
             </View>

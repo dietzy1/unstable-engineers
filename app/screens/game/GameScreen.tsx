@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-native';
 import { GameTable } from 'screens/game/overview/GameTable';
+import { DragProvider } from './overview/DragContext';
 
 import { PlayerDetailScreen } from './detail/PlayerDetailScreen';
 import { GameOverviewScreen } from './overview/GameOverviewScreen';
@@ -571,17 +572,19 @@ export const GameScreen = ({ gameId, onLeaveGame, userProfile }: NewGameScreenPr
   return (
     <>
       {currentView === 'main' && (
-        <GameTable
-          playerData={players}
-          currentPlayerId="player1" // Always current player ID
-          currentTurnPlayerId={currentTurnPlayerId}
-          turnTimeRemaining={turnTimeRemaining}
-          onPlayerPress={handlePlayerPress}
-          onCenterPress={handleCenterPress}
-          onEndTurn={isCurrentUserTurn ? handleEndTurn : undefined}
-          onLeaveGame={onLeaveGame}
-          gameCards={gameCards}
-        />
+        <DragProvider>
+          <GameTable
+            playerData={players}
+            currentPlayerId="player1" // Always current player ID
+            currentTurnPlayerId={currentTurnPlayerId}
+            turnTimeRemaining={turnTimeRemaining}
+            onPlayerPress={handlePlayerPress}
+            onCenterPress={handleCenterPress}
+            onEndTurn={isCurrentUserTurn ? handleEndTurn : undefined}
+            onLeaveGame={onLeaveGame}
+            gameCards={gameCards}
+          />
+        </DragProvider>
       )}
 
       {/* Game Overview Modal */}

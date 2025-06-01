@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, SafeAreaView } from 'react-native';
 import { PlayerData } from 'screens/game/GameScreen';
 import { MagicCard } from 'types/Card';
 
@@ -8,6 +8,9 @@ import { PlayerInformation } from './PlayerInformation';
 import { PlayerStatsBar } from './PlayerStatsBar';
 import { Header } from '../../../components/Header';
 import GameControls from './GameControls';
+import { useDrag } from './DragContext';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import GameBoard from './GameBoard';
 
 interface GameTableProps {
   playerData: PlayerData[];
@@ -32,23 +35,86 @@ export const GameTable = ({
   onLeaveGame,
   gameCards = [],
 }: GameTableProps) => {
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [playerDataState, setPlayerDataState] = useState<PlayerData[]>(playerData);
   const [gameCardsState, setGameCardsState] = useState<MagicCard[]>(gameCards);
+  const {
+    draggingCardId,
+    dragPosition,
+    setDraggingCardId,
+    setDragPosition,
+    setCenterLayout,
+    centerLayout,
+  } = useDrag();
+  const [highlight, setHighlight] = useState(false);
+  const highlightAnim = useSharedValue(0);
 
-  const handlePlayerPress = (playerId: string) => {
-    setSelectedPlayerId(playerId);
-    if (onPlayerPress) {
-      onPlayerPress(playerId);
+  // Highlight animation style
+  const highlightStyle = useAnimatedStyle(() => ({
+    shadowColor: '#facc15',
+    shadowOpacity: highlightAnim.value,
+    shadowRadius: 30 * highlightAnim.value,
+    shadowOffset: { width: 0, height: 0 },
+    borderColor: highlightAnim.value > 0 ? '#facc15' : '#475569',
+    borderWidth: 4,
+  }));
+
+  // Effect: when highlight is set, animate
+  React.useEffect(() => {
+    console.log('Highlight changed:', highlight);
+    if (highlight) {
+      highlightAnim.value = withTiming(1, { duration: 200 }, () => {
+        highlightAnim.value = withTiming(0, { duration: 600 });
+      });
+      setTimeout(() => setHighlight(false), 800);
     }
-  };
+  }, [highlight]);
+
+  // Effect: highlight board when dragging card over it
+  React.useEffect(() => {
+    if (draggingCardId && dragPosition && centerLayout) {
+      console.log('Drag position:', dragPosition);
+      console.log('Center layout:', centerLayout);
+      const { x, y, width, height } = centerLayout;
+      const isOverBoard =
+        dragPosition.x >= x &&
+        dragPosition.x <= x + width &&
+        dragPosition.y >= y &&
+        dragPosition.y <= y + height;
+
+      console.log('Is over board:', isOverBoard);
+      if (isOverBoard) {
+        setHighlight(true);
+      }
+    }
+  }, [draggingCardId, dragPosition, centerLayout]);
+
+  // Effect: Update board position when layout changes
+  useEffect(() => {
+    const updateBoardPosition = () => {
+      if (centerLayout) {
+        console.log('Updating board position');
+        setCenterLayout(centerLayout);
+      }
+    };
+
+    // Update position after a short delay to ensure layout is complete
+    const timeoutId = setTimeout(updateBoardPosition, 100);
+    return () => clearTimeout(timeoutId);
+  }, [centerLayout, setCenterLayout]);
 
   const handlePlayCard = (cardId: string) => {
+    console.log('Playing card:', cardId);
     const currentPlayer = playerDataState.find((p) => p.id === currentPlayerId);
-    if (!currentPlayer) return;
+    if (!currentPlayer) {
+      console.log('Current player not found');
+      return;
+    }
 
     const cardToPlay = currentPlayer.cards.find((c) => c.id === cardId);
-    if (!cardToPlay) return;
+    if (!cardToPlay) {
+      console.log('Card to play not found');
+      return;
+    }
 
     // Update player's hand
     const updatedPlayers = playerDataState.map((p) => {
@@ -63,9 +129,10 @@ export const GameTable = ({
 
     setPlayerDataState(updatedPlayers);
     setGameCardsState((prev) => [...prev, cardToPlay]);
+    console.log('Card played successfully');
   };
 
-  // Remove circle positioning logic and split players
+  // Split players
   const opponents = playerData.filter((p) => p.id !== currentPlayerId);
   const rightOpponents = opponents.slice(0, 4);
   const leftOpponents = opponents.slice(4);
@@ -81,7 +148,6 @@ export const GameTable = ({
     <SafeAreaView className="flex-1 bg-gray-900">
       <Header />
 
-      {/* Game controls */}
       <GameControls
         isCurrentUserTurn={isCurrentUserTurn}
         currentTurnPlayerName={currentTurnPlayerName}
@@ -90,60 +156,31 @@ export const GameTable = ({
         onEndTurn={onEndTurn}
       />
 
-      {/* Main Game Area */}
-      <View className=" mt-40 flex-1 flex-col">
-        {/* Left opponents (if any) */}
+      <View className="mt-40 flex-1 flex-col">
         {leftOpponents.length > 0 && (
-          <View className="absolute left-0 justify-center ">
+          <View className="absolute left-0 justify-center">
             {leftOpponents.map((player) => (
               <View key={player.id} className="my-2">
                 <PlayerInformation
                   player={player}
                   isCurrentPlayer={false}
                   isPlayerTurn={player.id === currentTurnPlayerId}
-                  onPress={handlePlayerPress}
+                  onPress={onPlayerPress}
                 />
               </View>
             ))}
           </View>
         )}
-        {/* Center game area and current player */}
-        <View className="flex-1 items-center ">
-          {/* Central Game Area */}
-          <TouchableOpacity
-            className="mb-4 h-48 w-48 items-center justify-center rounded-full border-4 border-gray-700 bg-gray-800"
-            onPress={onCenterPress}>
-            <View className="absolute inset-0 rounded-full border-4 border-gray-600 opacity-30" />
-            <View className="absolute inset-8 rounded-full border-2 border-gray-500 opacity-20" />
-            <View className="items-center justify-center">
-              <Text className="text-lg font-bold text-white">Game Cards: {gameCards.length}</Text>
-              <Text className="text-xs text-gray-400">Tap to view game table</Text>
-              {gameCards.length > 0 && (
-                <View className="mt-2 h-20 w-14 items-center justify-center">
-                  {Array.from({ length: Math.min(7, gameCards.length) }).map((_, index) => (
-                    <View
-                      key={index}
-                      style={{
-                        position: 'absolute',
-                        width: 40,
-                        height: 60,
-                        backgroundColor: '#334155',
-                        borderRadius: 4,
-                        borderWidth: 1,
-                        borderColor: '#475569',
-                        transform: [
-                          { rotate: `${(index - 1) * 5}deg` },
-                          { translateY: -index * 2 },
-                        ],
-                      }}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
+
+        <View className="flex-1 items-center">
+          <GameBoard
+            highlight={highlight}
+            setCenterLayout={setCenterLayout}
+            gameCards={gameCardsState}
+            highlightStyle={highlightStyle}
+          />
         </View>
-        {/* Right opponents */}
+
         <View className="absolute right-0 justify-center">
           {rightOpponents.map((player) => (
             <View key={player.id} className="my-2">
@@ -151,14 +188,13 @@ export const GameTable = ({
                 player={player}
                 isCurrentPlayer={false}
                 isPlayerTurn={player.id === currentTurnPlayerId}
-                onPress={handlePlayerPress}
+                onPress={onPlayerPress}
               />
             </View>
           ))}
         </View>
       </View>
 
-      {/* Player Hand at the bottom */}
       {currentPlayer && (
         <>
           <CardHand cards={currentPlayer.cards} onPlayCard={handlePlayCard} />
