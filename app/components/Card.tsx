@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Image, Modal, Pressable, Text } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -8,6 +8,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { MagicCard } from 'types/Card';
+import { CardInteractions } from './CardInteractions';
 import { useDrag } from 'screens/game/overview/DragContext';
 
 export const Card = ({
@@ -17,6 +18,7 @@ export const Card = ({
   card: MagicCard;
   onPlayCard: (cardId: string) => void;
 }) => {
+  const [isModalVisible, setModalVisible] = useState(false);
   const offset = useSharedValue({ x: 0, y: 0 });
   const scale = useSharedValue(1);
   const zIndex = useSharedValue(0);
@@ -80,16 +82,38 @@ export const Card = ({
   }));
 
   return (
-    <GestureDetector gesture={gesture}>
-      <Animated.View style={[animatedStyle, { position: 'relative' }]}>
-        <View className="h-full w-full rounded-lg bg-black shadow-lg">
-          <Image
-            source={require('../assets/card.png')}
-            className="h-full w-full rounded-lg"
-            resizeMode="cover"
-          />
-        </View>
-      </Animated.View>
-    </GestureDetector>
+    <>
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[animatedStyle, { position: 'relative' }]}>
+          <CardInteractions onLongPress={() => setModalVisible(true)}>
+            <View className="h-full w-full rounded-lg bg-black shadow-lg">
+              <Image
+                source={require('../assets/card.png')}
+                className="h-full w-full rounded-lg"
+                resizeMode="cover"
+              />
+            </View>
+          </CardInteractions>
+        </Animated.View>
+      </GestureDetector>
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isModalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <Pressable
+          className="flex-1 items-center justify-center bg-black/80"
+          onPress={() => setModalVisible(false)}>
+          <View className="h-3/5 w-4/5">
+            <Image
+              source={require('../assets/card.png')}
+              className="h-full w-full rounded-lg"
+              resizeMode="contain"
+            />
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 };
