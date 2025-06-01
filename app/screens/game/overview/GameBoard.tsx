@@ -1,11 +1,12 @@
 import React, { useRef } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import Animated from 'react-native-reanimated';
+import { MagicCard } from 'types/Card';
 
 interface GameBoardProps {
   highlight: boolean;
   setCenterLayout: (layout: { x: number; y: number; width: number; height: number }) => void;
-  gameCards: any[];
+  gameCards: MagicCard[];
   highlightStyle?: any;
 }
 
@@ -57,15 +58,16 @@ const GameBoard = ({ highlight, setCenterLayout, gameCards, highlightStyle }: Ga
                 key={index}
                 style={{
                   position: 'absolute',
-                  width: 40,
-                  height: 60,
-                  backgroundColor: '#334155',
-                  borderRadius: 4,
-                  borderWidth: 1,
-                  borderColor: '#475569',
+                  width: 50,
+                  height: 70,
                   transform: [{ rotate: `${(index - 1) * 5}deg` }, { translateY: -index * 2 }],
-                }}
-              />
+                }}>
+                <Image
+                  source={require('../../../assets/card.png')}
+                  className="h-full w-full rounded-lg"
+                  resizeMode="cover"
+                />
+              </View>
             ))}
           </View>
         )}

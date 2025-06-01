@@ -122,7 +122,7 @@ export const PlayerInformation = ({
         <View className="ml-2 flex-1 items-end justify-center">
           {/* Health Points */}
           <Text className="mb-1 text-sm font-bold" style={{ color: healthColor }}>
-            {player.lifeTotal}
+            {player.lifeTotal} hp
           </Text>
 
           {/* Effects indicators (buffs/debuffs) */}
