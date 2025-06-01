@@ -8,10 +8,10 @@ import {
   SafeAreaView,
   Image,
 } from 'react-native';
+import { MagicCard } from 'types/Card';
 
 import { BuffDebuff, EffectProps } from '../../../components/BuffDebuff';
 import { Card } from '../../../components/Card';
-import { MagicCard } from 'types/Card';
 
 interface PlayerDetailScreenProps {
   playerName: string;

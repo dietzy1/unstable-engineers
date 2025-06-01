@@ -8,13 +8,12 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-
-import { EffectProps } from '../../components/BuffDebuff';
-import { Card } from '../../components/Card';
-import { CardDeck } from '../../components/CardDeck';
-import { EffectsManager } from '../../components/EffectsManager';
-
 import { MagicCard } from 'types/Card';
+
+import { EffectProps } from '../../../components/BuffDebuff';
+import { Card } from '../../../components/Card';
+import { CardDeck } from '../../../components/CardDeck';
+import { EffectsManager } from '../../../components/EffectsManager';
 
 // Sample data for available cards to draw
 const AVAILABLE_DRAW_CARDS: MagicCard[] = [

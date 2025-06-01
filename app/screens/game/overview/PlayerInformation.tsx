@@ -1,9 +1,9 @@
 import { FontAwesome5, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import { PlayerData } from 'screens/game/GameScreen';
 import { AVATARS } from 'screens/lobby/GameSelectionScreen';
-import Svg, { Circle } from 'react-native-svg';
 
 interface PlayerInformationProps {
   player: PlayerData;
@@ -44,7 +44,7 @@ export const PlayerInformation = ({
   return (
     <TouchableOpacity
       onPress={() => onPress(player.id)}
-      className={`rounded-lg px-2 py-2 shadow-lg ${
+      className={`z-30 rounded-lg px-2 py-2 shadow-lg ${
         isCurrentPlayer
           ? 'border border-blue-400 bg-blue-900/80'
           : isPlayerTurn
@@ -89,7 +89,7 @@ export const PlayerInformation = ({
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                transform={`rotate(-90 20 20)`} // Start from top
+                transform="rotate(-90 20 20)" // Start from top
               />
             </Svg>
           </View>

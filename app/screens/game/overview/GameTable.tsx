@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
 import { PlayerData } from 'screens/game/GameScreen';
-
-import { Header } from '../../../components/Header';
-import { PlayerInformation } from '../../../components/PlayerInformation';
-import { CardHand } from '../../../components/CardHand';
 import { MagicCard } from 'types/Card';
-import { PlayerStatsBar } from '../../../components/PlayerStatsBar';
+
+import { CardHand } from './CardHand';
+import { PlayerInformation } from './PlayerInformation';
+import { PlayerStatsBar } from './PlayerStatsBar';
+import { Header } from '../../../components/Header';
+import GameControls from './GameControls';
 
 interface GameTableProps {
   playerData: PlayerData[];
@@ -32,6 +33,8 @@ export const GameTable = ({
   gameCards = [],
 }: GameTableProps) => {
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [playerDataState, setPlayerDataState] = useState<PlayerData[]>(playerData);
+  const [gameCardsState, setGameCardsState] = useState<MagicCard[]>(gameCards);
 
   const handlePlayerPress = (playerId: string) => {
     setSelectedPlayerId(playerId);
@@ -40,15 +43,27 @@ export const GameTable = ({
     }
   };
 
-  // Format time remaining as minutes:seconds
-  const formatTimeRemaining = () => {
-    const minutes = Math.floor(turnTimeRemaining / 60);
-    const seconds = turnTimeRemaining % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
+  const handlePlayCard = (cardId: string) => {
+    const currentPlayer = playerDataState.find((p) => p.id === currentPlayerId);
+    if (!currentPlayer) return;
 
-  // Is it the current user's turn?
-  const isCurrentUserTurn = currentTurnPlayerId === currentPlayerId;
+    const cardToPlay = currentPlayer.cards.find((c) => c.id === cardId);
+    if (!cardToPlay) return;
+
+    // Update player's hand
+    const updatedPlayers = playerDataState.map((p) => {
+      if (p.id === currentPlayerId) {
+        return {
+          ...p,
+          cards: p.cards.filter((c) => c.id !== cardId),
+        };
+      }
+      return p;
+    });
+
+    setPlayerDataState(updatedPlayers);
+    setGameCardsState((prev) => [...prev, cardToPlay]);
+  };
 
   // Remove circle positioning logic and split players
   const opponents = playerData.filter((p) => p.id !== currentPlayerId);
@@ -58,51 +73,28 @@ export const GameTable = ({
   // Find the current player
   const currentPlayer = playerData.find((p) => p.id === currentPlayerId);
 
-  // Calculate reserved space for hand (1/3rd of screen height)
-  const screenHeight = Dimensions.get('window').height;
-  const handHeight = screenHeight / 4;
+  // Is it the current user's turn?
+  const isCurrentUserTurn = currentTurnPlayerId === currentPlayerId;
+  const currentTurnPlayerName = playerData.find((p) => p.id === currentTurnPlayerId)?.name || '';
 
   return (
     <SafeAreaView className="flex-1 bg-gray-900">
       <Header />
 
       {/* Game controls */}
-      <View className="mb-0 px-3">
-        {/* Turn indicator and timer */}
-        <View className="mb-2 items-center">
-          <Text className="text-lg font-bold text-white">
-            {isCurrentUserTurn
-              ? 'Your Turn'
-              : `${playerData.find((p) => p.id === currentTurnPlayerId)?.name}'s Turn`}
-          </Text>
-          <View className="mt-1 flex-row items-center">
-            <View className="mr-2 h-4 w-4 rounded-full bg-amber-500" />
-            <Text className="text-md font-semibold text-amber-300">{formatTimeRemaining()}</Text>
-          </View>
-        </View>
-
-        {/* Game controls */}
-        <View className="flex-row items-center justify-between">
-          <TouchableOpacity className="rounded-lg bg-red-600 px-3 py-2" onPress={onLeaveGame}>
-            <Text className="font-bold text-white">Leave Game</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className={`rounded-lg px-3 py-2 ${isCurrentUserTurn ? 'bg-indigo-600' : 'bg-gray-600'}`}
-            onPress={isCurrentUserTurn ? onEndTurn : undefined}
-            disabled={!isCurrentUserTurn || !onEndTurn}>
-            <Text className={`font-bold ${isCurrentUserTurn ? 'text-white' : 'text-gray-400'}`}>
-              End Turn
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <GameControls
+        isCurrentUserTurn={isCurrentUserTurn}
+        currentTurnPlayerName={currentTurnPlayerName}
+        turnTimeRemaining={turnTimeRemaining}
+        onLeaveGame={onLeaveGame}
+        onEndTurn={onEndTurn}
+      />
 
       {/* Main Game Area */}
-      <View className=" flex-1 flex-row items-center justify-center ">
+      <View className=" mt-40 flex-1 flex-col">
         {/* Left opponents (if any) */}
         {leftOpponents.length > 0 && (
-          <View className="absolute bottom-0 left-0 top-0 z-10 justify-center">
+          <View className="absolute left-0 justify-center ">
             {leftOpponents.map((player) => (
               <View key={player.id} className="my-2">
                 <PlayerInformation
@@ -116,7 +108,7 @@ export const GameTable = ({
           </View>
         )}
         {/* Center game area and current player */}
-        <View className="flex-1 items-center">
+        <View className="flex-1 items-center ">
           {/* Central Game Area */}
           <TouchableOpacity
             className="mb-4 h-48 w-48 items-center justify-center rounded-full border-4 border-gray-700 bg-gray-800"
@@ -152,7 +144,7 @@ export const GameTable = ({
           </TouchableOpacity>
         </View>
         {/* Right opponents */}
-        <View className="absolute bottom-0 right-0 top-0 z-10 justify-center">
+        <View className="absolute right-0 justify-center">
           {rightOpponents.map((player) => (
             <View key={player.id} className="my-2">
               <PlayerInformation
@@ -169,7 +161,7 @@ export const GameTable = ({
       {/* Player Hand at the bottom */}
       {currentPlayer && (
         <>
-          <CardHand cards={currentPlayer.cards} />
+          <CardHand cards={currentPlayer.cards} onPlayCard={handlePlayCard} />
           <PlayerStatsBar player={currentPlayer} />
         </>
       )}

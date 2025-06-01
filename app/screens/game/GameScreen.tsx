@@ -1,11 +1,10 @@
-import { GameTable } from 'screens/game/table/GameTable';
 import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-native';
+import { GameTable } from 'screens/game/overview/GameTable';
 
-import { GameOverviewScreen } from './GameOverviewScreen';
 import { PlayerDetailScreen } from './detail/PlayerDetailScreen';
+import { GameOverviewScreen } from './overview/GameOverviewScreen';
 import { EffectProps } from '../../components/BuffDebuff';
-
 import { CardAddedNotification } from '../../components/CardAddedNotification';
 import { CardType, MagicCard } from '../../types/Card';
 

@@ -1,10 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { PlayerData } from 'screens/game/GameScreen';
-import { ManaColor } from 'types/Card';
 import { AVATARS } from 'screens/lobby/GameSelectionScreen';
+import { ManaColor } from 'types/Card';
 
 interface PlayerStatsBarProps {
   player: PlayerData;
@@ -34,7 +34,7 @@ const MANA_CONFIG: Record<ManaColor, { label: string; bg: string; icon: string; 
   black: {
     label: 'Shadow',
     bg: 'bg-purple-800',
-    icon: '🌙',
+    icon: '💀',
     glow: 'shadow-purple-500/50',
   },
 };
@@ -67,8 +67,8 @@ export const PlayerStatsBar = ({ player }: PlayerStatsBarProps) => {
   const strokeDashoffset = strokeDasharray * (1 - healthPercent);
 
   return (
-    <View className="absolute bottom-0 w-full items-center pb-4">
-      <View className="w-full  rounded-t-2xl   bg-gray-900/80 px-4 pb-2 pt-4 shadow-2xl backdrop-blur-lg">
+    <View className="absolute bottom-0 z-30 w-full items-center pb-1">
+      <View className="w-full  rounded-t-2xl   bg-gray-900/80 px-4 pb-2 pt-2 shadow-2xl backdrop-blur-lg">
         <View className="flex-row items-center justify-between">
           {/* Left Side - Effects */}
           <View className="flex-1 items-center">
